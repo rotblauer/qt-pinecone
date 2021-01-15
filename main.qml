@@ -92,11 +92,10 @@ ApplicationWindow {
         id: positionSource
         updateInterval: 1000
         //      active: true
-        //      nmeaSource: "output.nmea"
+        // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
-            console.log("(onPositionChanged) position", positionSource.position)
-
             console.log("positionSource.nmeaSource", positionSource.nmeaSource)
+//            console.log("(onPositionChanged) position", positionSource.position)
             console.log("position.coordinate.latitude", positionSource.position.coordinate.latitude)
             console.log("position.coordinate.longitude", positionSource.position.coordinate.longitude)
             console.log("position.coordinate.altitude", positionSource.position.coordinate.altitude)
@@ -169,19 +168,18 @@ ApplicationWindow {
                     if (positionSource.supportedPositioningMethods
                             === PositionSource.NoPositioningMethods) {
                         console.log("No positioning methods")
-                        positionSource.nmeaSource = "output.nmea"
+                        positionSource.nmeaSource = "SpecialDelivery2.nmea"
                         positionMethodText.text = "(nmea filesource): " + printableMethod(
                                     positionSource.supportedPositioningMethods)
                     }
                     if (positionSource.supportedPositioningMethods
                             === PositionSource.NonSatellitePositioningMethods) {
                         console.log("Non-satellite positioning methods")
-                        positionSource.nmeaSource = "output.nmea"
+                        positionSource.nmeaSource = "SpecialDelivery2.nmea"
                         positionMethodText.text = "(nmea filesource): " + printableMethod(
                                     positionSource.supportedPositioningMethods)
                     }
-                    positionMethodText.text = printableMethod(
-                                positionSource.supportedPositioningMethods)
+                    positionSource.nmeaSource = "SpecialDelivery2.nmea"
                     if (!positionSource.active) {
                         positionSource.start()
                     }

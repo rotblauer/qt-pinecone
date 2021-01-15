@@ -53,7 +53,7 @@ function dbInit()
     var db = LocalStorage.openDatabaseSync("Activity_Tracker_DB", "", "Track exercise", 1000000)
     try {
         db.transaction(function (tx) {
-            tx.executeSql('DROP TABLE IF EXISTS trip_log')
+//            tx.executeSql('DROP TABLE IF EXISTS trip_log')
             tx.executeSql('CREATE TABLE IF NOT EXISTS trip_log (date text,trip_desc text,distance numeric)')
         })
         console.log("Created database");
@@ -125,4 +125,14 @@ function dbDeleteRow(Prowid)
     db.transaction(function (tx) {
         tx.executeSql('delete from trip_log where rowid = ?', [Prowid])
     })
+}
+
+function dbCount() {
+    var db = dbGetHandle()
+    var count = 0
+    db.transaction(function(tx) {
+        var result = tx.executeSql('SELECT COUNT(rowid) as count FROM trip_log')
+        count = result.rows.item(0).count;
+    })
+    return count;
 }

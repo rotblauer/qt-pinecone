@@ -250,6 +250,9 @@ ApplicationWindow {
                         console.log("Save OK", rowid);
                         listView.forceLayout()
                         inputstuff.clear()
+
+                        var count = DBJS.dbCount();
+                        console.log("db contains", count, "entries");
                         return;
                     }
                     console.log("Save failed");
@@ -274,10 +277,12 @@ ApplicationWindow {
                 id: listView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 model: MyModel {}
                 delegate: MyDelegate {
                     //                    onClicked: listView.currentIndex = index
                 }
+
                 highlight: highlightBar
                 highlightFollowsCurrentItem: true
                 focus: true

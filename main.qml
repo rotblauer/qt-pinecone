@@ -157,29 +157,32 @@ ApplicationWindow {
             console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
             console.log("positionSource.method", printableMethod(positionSource.supportedPositioningMethods))
 
+            var stat = "info";
+            var statT = "GPS: OK";
+
             if (positionSource.position && positionSource.position.coordinate.isValid) {
                 var savedRowId = savePosition(positionSource.position);
                 if (savedRowId > 1) {
                     logPosition(positionSource.position);
-                    statusText.text = "GPS: OK";
                 } else {
-                    statusText.text = "DB: save failed";
+                    statT = "DB: save failed";
+                    stat = "error"
                 }
             } else {
-                statusText.text = "GPS: invalid position";
+                statT = "GPS: invalid position";
+                stat = "error"
             }
+            setStatusDisplay(stat, statT);
         }
 
         onSourceErrorChanged: {
             if (sourceError == PositionSource.NoError)
                 return
-
-            console.log("Source error: " + sourceError)
-            positionText.text = "error: " + sourceError
+            setStatusDisplay("error", sourceError)
             stop()
         }
         onUpdateTimeout: {
-            positionText.text = "update timed out"
+            setStatusDisplay("warn", "update timed out");
         }
     }
     function printableMethod(method) {
@@ -193,6 +196,40 @@ ApplicationWindow {
             return "a"
         return "source error"
     }
+    function startPositioning() {
+        if (positionSource.supportedPositioningMethods
+                === PositionSource.NoPositioningMethods ||
+            positionSource.supportedPositioningMethods
+                            === PositionSource.NonSatellitePositioningMethods) {
+            console.log("No real positioning methods, using NMEA file")
+            positionSource.nmeaSource = "SpecialDelivery2.nmea"
+            positionMethodText.text = "(nmea filesource): " + printableMethod(
+                        positionSource.supportedPositioningMethods)
+        }
+
+        if (!positionSource.active) {
+            positionSource.start()
+        }
+        positionSource.update()
+    }
+
+    function setStatusDisplay(qualitative, text) {
+        console.log(qualitative + ": " + text);
+        statusText.font.bold = false
+        switch (qualitative) {
+        case "info":
+            statusText.color = Material.color(Material.Teal)
+            break;
+        case "warn":
+            statusText.color = Material.color(Material.Orange)
+            break;
+        case "error":
+            statusText.color = Material.color(Material.Red)
+            statusText.font.bold = true
+            break;
+        }
+        statusText.text = text;
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -201,95 +238,84 @@ ApplicationWindow {
         anchors.leftMargin: 0
         anchors.topMargin: 0
         RowLayout {
-            Text {
-                id: positionText
-                text: "position text"
-            }
-        }
-        RowLayout {
+            Layout.fillWidth: true
             Text {
                 id: positionMethodText
-                text: "position method text"
+                text: "<POSITIONING METHOD>"
+                color: Material.color(Material.Teal)
+                Layout.fillWidth: true
+            }
+            Text {
+                id: statusText
+
+                color: Material.color(Material.Grey)
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+
+                text: "<STATUS>"
             }
         }
-        RowLayout {
-            Button {
-                id: locateButton
-                text: "Locate & update"
-                onClicked: {
-                    if (positionSource.supportedPositioningMethods
-                            === PositionSource.NoPositioningMethods) {
-                        console.log("No positioning methods")
-                        positionSource.nmeaSource = "SpecialDelivery2.nmea"
-                        positionMethodText.text = "(nmea filesource): " + printableMethod(
-                                    positionSource.supportedPositioningMethods)
-                    }
-                    if (positionSource.supportedPositioningMethods
-                            === PositionSource.NonSatellitePositioningMethods) {
-                        console.log("Non-satellite positioning methods")
-                        positionSource.nmeaSource = "SpecialDelivery2.nmea"
-                        positionMethodText.text = "(nmea filesource): " + printableMethod(
-                                    positionSource.supportedPositioningMethods)
-                    }
-                    if (!positionSource.active) {
-                        positionSource.start()
-                    }
-                    positionSource.update()
-                }
-            }
-        }
-        RowLayout {
-            GridLayout {
-                id: mygrid
+//        RowLayout {
+//            Button {
+//                id: locateButton
+//                text: "Locate & update"
+//                onClicked: {
+//                    startPositioning();
+//                }
+//            }
+//        }
+//        RowLayout {
+//            GridLayout {
+//                id: mygrid
 
-                columns: 2
+//                columns: 2
 
-                Button {
-                    id: jsonReqButton
-                    text: "Get IP"
-                    onClicked: {
-                        api_get(function (status, body) {
-                            if (status === 200) {
-                                textIP.text = body
-                            }
-                        }, "https://icanhazip.com/v4", {})
-                    }
-                }
-                Text {
-                    id: textIP
-                    text: "position method text"
-                }
-            }
-        }
+//                Button {
+//                    id: jsonReqButton
+//                    text: "Get IP"
+//                    onClicked: {
+//                        api_get(function (status, body) {
+//                            if (status === 200) {
+//                                textIP.text = body
+//                            }
+//                        }, "https://icanhazip.com/v4", {})
+//                    }
+//                }
+//                Text {
+//                    id: textIP
+//                    text: "position method text"
+//                }
+//            }
+//        }
 
-        RowLayout {
-            id: myrowlayout
-            TextField {
-                id: inputstuff
-                Material.accent: Material.Orange
-                placeholderText: "Write something ..."
-            }
-            Button {
-                text: "Dialog"
-                onClicked: {
-                    dialog.open()
-                }
-            }
+//        RowLayout {
+//            id: myrowlayout
+//            TextField {
+//                id: inputstuff
+//                Material.accent: Material.Orange
+//                placeholderText: "Write something ..."
+//            }
+//            Button {
+//                text: "Dialog"
+//                onClicked: {
+//                    dialog.open()
+//                }
+//            }
 
-            Button {
-                id: saveButton
-                text: "Save field"
+//            Button {
+//                id: saveButton
+//                text: "Save field"
 
-                //                Material.background: Material.Teal
-                Material.foreground: Material.Green
-                //                highlighted: true
-                //                Material.accent: Material.Orange
-                onClicked: {
-                    console.log("click, but noop!");
-                }
-            }
+//                //                Material.background: Material.Teal
+//                Material.foreground: Material.Green
+//                //                highlighted: true
+//                //                Material.accent: Material.Orange
+//                onClicked: {
+//                    console.log("click, but noop!");
+//                }
+//            }
 
-        }
+//        }
 
         RowLayout {
             id: rowLayout
@@ -306,7 +332,7 @@ ApplicationWindow {
 
                 model: MyModel {}
                 delegate: MyDelegate {
-                    //                    onClicked: listView.currentIndex = index
+                    // onClicked: listView.currentIndex = index
                 }
 
                 highlight: highlightBar
@@ -339,24 +365,9 @@ ApplicationWindow {
                 }
             }
 
-            Text {
-                id: statusText
 
-                color: "red"
-                Layout.fillWidth: true
-                font.bold: true
-
-                text: "status here"
-            }
 
         }
-
-        RowLayout {
-            id: rowLayout2
-            width: 100
-            height: 100
-        }
-
     }
 
     Component {
@@ -385,7 +396,8 @@ ApplicationWindow {
 
 
     Component.onCompleted: {
-        DBJS.dbInit()
+        DBJS.dbInit();
+        startPositioning();
     }
 }
 

@@ -94,7 +94,7 @@ ApplicationWindow {
         //      active: true
         // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
-            console.log("positionSource.nmeaSource", positionSource.nmeaSource)
+            console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
 //            console.log("(onPositionChanged) position", positionSource.position)
             console.log("position.coordinate.latitude", positionSource.position.coordinate.latitude)
             console.log("position.coordinate.longitude", positionSource.position.coordinate.longitude)
@@ -179,7 +179,7 @@ ApplicationWindow {
                         positionMethodText.text = "(nmea filesource): " + printableMethod(
                                     positionSource.supportedPositioningMethods)
                     }
-                    positionSource.nmeaSource = "SpecialDelivery2.nmea"
+//                    positionSource.nmeaSource = "SpecialDelivery2.nmea"
                     if (!positionSource.active) {
                         positionSource.start()
                     }

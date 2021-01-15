@@ -116,7 +116,7 @@ ApplicationWindow {
 
         var rowid = parseInt(DBJS.dbInsert(positionObject), 10);
         if (rowid) {
-            console.log("Save OK", rowid);
+            console.log("Save OK", rowid, JSON.stringify(positionObject));
 
             // Manually insert a COPY of the record into the listview model.
             listView.model.insert(0, positionObject);
@@ -171,7 +171,7 @@ ApplicationWindow {
             if (positionSource.position && positionSource.position.coordinate.isValid) {
                 var savedRowId = saveValidPosition(positionSource.position);
                 if (savedRowId > 1) {
-                    logPosition(positionSource.position);
+//                    logPosition(positionSource.position);
                 } else {
                     statT = "DB: save failed";
                     stat = "error"

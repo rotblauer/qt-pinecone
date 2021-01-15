@@ -4,7 +4,6 @@
         <file>MyDelegate.qml</file>
         <file>MyModel.qml</file>
         <file>Database.js</file>
-        <file>output.nmea</file>
         <file>SpecialDelivery2.nmea</file>
     </qresource>
 </RCC>

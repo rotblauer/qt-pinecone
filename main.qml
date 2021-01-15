@@ -113,15 +113,22 @@ ApplicationWindow {
         console.log("Thinking about saving: ", JSON.stringify(positionObject));
         var rowid = parseInt(DBJS.dbInsert(positionObject), 10);
         if (rowid) {
+            console.log("Save OK", rowid);
+
             // Manually insert a COPY of the record into the listview model.
             listView.model.insert(0, positionObject);
-            if (listView.model.length > 30)
-                listView.model.pop();
+            if (listView.model.count > 30) {
+                listView.model.remove(30, listView.model.count - 30);
+            }
+
+            console.log("listView.model.count", listView.model.count);
+
             listView.currentIndex = 0;
-            console.log("Save OK", rowid);
             listView.forceLayout()
+
             var count = getSavedPositionsCount();
             console.log("db contains", count, "entries");
+            entriesCount.text = "Q: " + count;
         }
         return rowid;
     }
@@ -237,8 +244,9 @@ ApplicationWindow {
         anchors.bottomMargin: 0
         anchors.leftMargin: 0
         anchors.topMargin: 0
-        RowLayout {
+        GridLayout {
             Layout.fillWidth: true
+            columns: 3
             Text {
                 id: positionMethodText
                 text: "<POSITIONING METHOD>"
@@ -246,76 +254,71 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Text {
+                id: entriesCount
+                text: "<NUMENTRIES>"
+                color: Material.color(Material.Teal)
+                Layout.fillWidth: true
+            }
+            Text {
                 id: statusText
-
+                text: "<STATUS>"
                 color: Material.color(Material.Grey)
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
-
-                text: "<STATUS>"
             }
         }
-//        RowLayout {
-//            Button {
-//                id: locateButton
-//                text: "Locate & update"
-//                onClicked: {
-//                    startPositioning();
-//                }
-//            }
-//        }
-//        RowLayout {
-//            GridLayout {
-//                id: mygrid
 
-//                columns: 2
+        GridLayout {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignRight
+            columns: 9
+            Text {
+                id: table_header_timestamp
+                text: "ts"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_longitude
+                text: "lon"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_latitude
+                text: "lat"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_altitude
+                text: "alt"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_direction
+                text: "cog"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_horizontal_accuracy
+                text: "hacc"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_vertical_accuracy
+                text: "vacc"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_speed
+                text: "m/s"
+                Layout.fillWidth: true
+            }
+            Text {
+                id: table_header_vertical_speed
+                text: "vm/s"
+                Layout.fillWidth: true
+            }
+        }
 
-//                Button {
-//                    id: jsonReqButton
-//                    text: "Get IP"
-//                    onClicked: {
-//                        api_get(function (status, body) {
-//                            if (status === 200) {
-//                                textIP.text = body
-//                            }
-//                        }, "https://icanhazip.com/v4", {})
-//                    }
-//                }
-//                Text {
-//                    id: textIP
-//                    text: "position method text"
-//                }
-//            }
-//        }
-
-//        RowLayout {
-//            id: myrowlayout
-//            TextField {
-//                id: inputstuff
-//                Material.accent: Material.Orange
-//                placeholderText: "Write something ..."
-//            }
-//            Button {
-//                text: "Dialog"
-//                onClicked: {
-//                    dialog.open()
-//                }
-//            }
-
-//            Button {
-//                id: saveButton
-//                text: "Save field"
-
-//                //                Material.background: Material.Teal
-//                Material.foreground: Material.Green
-//                //                highlighted: true
-//                //                Material.accent: Material.Orange
-//                onClicked: {
-//                    console.log("click, but noop!");
-//                }
-//            }
-
-//        }
 
         RowLayout {
             id: rowLayout
@@ -339,34 +342,8 @@ ApplicationWindow {
                 highlightFollowsCurrentItem: true
                 focus: true
 
-                header: Component {
-                    Text {
-                        text: "Saved activities"
-                    }
-                }
+//                header: Component {}
             }
-        }
-
-        RowLayout {
-            id: rowLayout1
-            Layout.fillWidth: true
-            height: 100
-
-            Pane {
-                width: 120
-                height: 120
-                Layout.fillWidth: true
-
-                Material.elevation: 6
-
-                Label {
-                    text: qsTr("I'm a card!")
-                    anchors.centerIn: parent
-                }
-            }
-
-
-
         }
     }
 
@@ -375,25 +352,9 @@ ApplicationWindow {
         Rectangle {
             width: listView.currentItem !== null ? listView.currentItem.width : implicitWidth
             height: listView.currentItem !== null ? listView.currentItem.height : implicitHeight
-            color: "lightgreen"
+            color: Material.color(Material.Teal)
         }
     }
-
-    Dialog {
-        id: dialog
-
-        x: (window.width - width) * 0.5
-        y: (window.height - height) * 0.5
-
-        contentWidth: window.width * 0.5
-        contentHeight: window.height * 0.25
-        standardButtons: Dialog.Ok
-
-        contentItem: Label {
-            text: inputstuff.text
-        }
-    }
-
 
     Component.onCompleted: {
         DBJS.dbInit();

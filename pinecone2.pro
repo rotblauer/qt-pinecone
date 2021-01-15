@@ -13,7 +13,7 @@ SOURCES += \
 
 RESOURCES += qml.qrc
 
-OTHER_FILES += ./*.nmea
+OTHER_FILES += ./SpecialDelivery*.nmea
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 #QML_IMPORT_PATH =

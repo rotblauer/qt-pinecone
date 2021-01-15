@@ -60,22 +60,23 @@ Item {
     height: 18
 
     required property int index
-//    required property int distance
-//    required property string trip_desc
-//    required property string date
 
-      required property string timestamp
-      required property real longitude
-      required property real latitude
-      required property real altitude
-      required property real direction
-      required property real horizontal_accuracy
-      required property real vertical_accuracy
-      required property real speed
-      required property real vertical_speed
+    required property string timestamp
+    required property real longitude
+    required property real latitude
+    required property real altitude
+    required property real direction
+    required property real horizontal_accuracy
+    required property real vertical_accuracy
+    required property real speed
+    required property real vertical_speed
 
     signal clicked()
 
+    function formatDate(datestring) {
+        var str = new Date(datestring).toISOString();
+        return str.substring(str.indexOf("T") + 1, str.indexOf("Z") - 4);
+    }
     Rectangle {
         id: baseRec
         anchors.fill: parent
@@ -92,69 +93,58 @@ Item {
 
             Text {
                 id: r_timestamp
-                text: delegate.timestamp
-                Layout.fillWidth: true
+                text: formatDate(delegate.timestamp)
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 6
             }
             Text {
                 id: r_longitude
                 text: delegate.longitude
-                Layout.fillWidth: true
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 5
             }
             Text {
                 id: r_latitude
                 text: delegate.latitude
-                Layout.fillWidth: true
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 5
             }
             Text {
                 id: r_altitude
-                text: delegate.altitude
-                Layout.fillWidth: true
+                text: delegate.altitude != 0 ? delegate.altitude : "_"
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 9 * 2
             }
             Text {
                 id: r_direction
-                text: delegate.direction
-                Layout.fillWidth: true
+                text: delegate.direction != -1 ? delegate.direction : "_"
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 9 * 2
             }
             Text {
                 id: r_horizontal_accuracy
-                text: delegate.horizontal_accuracy
-                Layout.fillWidth: true
+                text: delegate.horizontal_accuracy != -1 ? delegate.horizontal_accuracy : "_"
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 9 * 2
             }
             Text {
                 id: r_vertical_accuracy
-                text: delegate.vertical_accuracy
-                Layout.fillWidth: true
+                text: delegate.vertical_accuracy != -1 ? delegate.vertical_accuracy : "_"
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 9 * 2
             }
             Text {
                 id: r_speed
-                text: delegate.speed
-                Layout.fillWidth: true
+                text: delegate.speed != -1 ? delegate.speed : "_"
+//                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 9 *2
             }
             Text {
                 id: r_vertical_speed
-                text: delegate.vertical_speed
-                Layout.fillWidth: true
-            }
-
-//            Text {
-//                id: rDate
-//                text: delegate.date
-//                Layout.preferredWidth: parent.width / 4
-//                width: parent.width / 4
-//                color: "black"
-//            }
-//            Text {
-//                id: rDesc
-//                text: delegate.trip_desc
+                text: delegate.vertical_speed != -1 ? delegate.vertical_speed : "_"
 //                Layout.fillWidth: true
-//                color: "black"
-//            }
-//            Text {
-//                id: rDistance
-//                text: delegate.distance
-//                Layout.alignment: Qt.AlignRight
-//                color: "black"
-//            }
+                Layout.preferredWidth: parent.width / 9 * 2
+            }
         }
     }
 }

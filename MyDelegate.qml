@@ -87,7 +87,6 @@ Item {
             Text {
                 id: rDate
                 text: delegate.date
-                font.pixelSize: 22
                 Layout.preferredWidth: parent.width / 4
                 width: parent.width / 4
                 color: "black"

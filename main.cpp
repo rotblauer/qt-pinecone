@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     // quit() signal, so do this (optionally use Qt.exit()).
     QObject::connect(view.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
 //    view.setGeometry(QRect(100, 100, 360, 640));
-    view.setMinimumSize(QSize(720, 1280));
+    view.setMinimumSize(QSize(1500, 800));
     view.show();
     return application.exec();
 }

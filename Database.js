@@ -82,6 +82,12 @@ function dbInsert(Pdate, Pdesc, Pdistance)
                       [Pdate, Pdesc, Pdistance])
         var result = tx.executeSql('SELECT last_insert_rowid()')
         rowid = result.insertId
+
+//        listModel.insert(0, {
+//                             date: Pdate,
+//                             trip_desc: Pdesc,
+//                             distance: Pdistance
+//                         })
     })
     return rowid;
 }

@@ -88,17 +88,20 @@ ApplicationWindow {
         }
     }
 
-    function withPrec(value, prec) {
-        return Math.round(value * prec) / prec;
-    }
-    function getSavedPositionsCount() {
+    function getDBRowsCount() {
         var count = DBJS.dbCount();
         return count;
     }
 
-    function savePosition(position) {
-        var precLL = Math.pow(10, 6); // lng,lat
-        var precVel = Math.pow(10, 2); // velocities
+    function withPrec(value, prec) {
+        if (!value) return null;
+        return Math.round(value * prec) / prec;
+    }
+
+    function saveValidPosition(position) {
+        var precLL = 10000000;  // Math.pow(10, 7); // lng,lat
+        var precVel = 100; // Math.pow(10, 2); // velocities
+
         var positionObject = {
                               timestamp: position.timestamp + "",
                               longitude: withPrec(position.coordinate.longitude, precLL),
@@ -110,7 +113,7 @@ ApplicationWindow {
                               speed: withPrec(position.speed, precVel) || -1,
                               vertical_speed: withPrec(position.vertical_speed, precVel) || -1
         };
-        console.log("Thinking about saving: ", JSON.stringify(positionObject));
+
         var rowid = parseInt(DBJS.dbInsert(positionObject), 10);
         if (rowid) {
             console.log("Save OK", rowid);
@@ -118,16 +121,14 @@ ApplicationWindow {
             // Manually insert a COPY of the record into the listview model.
             listView.model.insert(0, positionObject);
             if (listView.model.count > 30) {
-                listView.model.remove(30, listView.model.count - 30);
+                listView.model.remove(30, listView.model.count - 31);
             }
-
-            console.log("listView.model.count", listView.model.count);
 
             listView.currentIndex = 0;
             listView.forceLayout()
 
-            var count = getSavedPositionsCount();
-            console.log("db contains", count, "entries");
+            var count = getDBRowsCount();
+            console.log("db contains", count, "");
             entriesCount.text = "Q: " + count;
         }
         return rowid;
@@ -168,7 +169,7 @@ ApplicationWindow {
             var statT = "GPS: OK";
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
-                var savedRowId = savePosition(positionSource.position);
+                var savedRowId = saveValidPosition(positionSource.position);
                 if (savedRowId > 1) {
                     logPosition(positionSource.position);
                 } else {

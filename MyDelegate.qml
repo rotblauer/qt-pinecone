@@ -95,55 +95,55 @@ Item {
                 id: r_timestamp
                 text: formatDate(delegate.timestamp)
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 6
+                Layout.preferredWidth: parent.width / 8
             }
             Text {
                 id: r_longitude
                 text: delegate.longitude
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 5
+                Layout.preferredWidth: parent.width / 7
             }
             Text {
                 id: r_latitude
                 text: delegate.latitude
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 5
+                Layout.preferredWidth: parent.width / 7
             }
             Text {
                 id: r_altitude
                 text: delegate.altitude != 0 ? delegate.altitude : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 * 2
+                Layout.preferredWidth: parent.width / 10
             }
             Text {
                 id: r_direction
                 text: delegate.direction != -1 ? delegate.direction : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 * 2
+                Layout.preferredWidth: parent.width / 10
             }
             Text {
                 id: r_horizontal_accuracy
                 text: delegate.horizontal_accuracy != -1 ? delegate.horizontal_accuracy : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 * 2
+                Layout.preferredWidth: parent.width / 10
             }
             Text {
                 id: r_vertical_accuracy
                 text: delegate.vertical_accuracy != -1 ? delegate.vertical_accuracy : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 * 2
+                Layout.preferredWidth: parent.width / 10
             }
             Text {
                 id: r_speed
                 text: delegate.speed != -1 ? delegate.speed : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 *2
+                Layout.preferredWidth: parent.width / 10
             }
             Text {
                 id: r_vertical_speed
                 text: delegate.vertical_speed != -1 ? delegate.vertical_speed : "_"
 //                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 9 * 2
+                Layout.preferredWidth: parent.width / 10
             }
         }
     }

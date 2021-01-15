@@ -109,7 +109,7 @@ function dbInsert(trackPoint)
     db.transaction(function (tx) {
         tx.executeSql('INSERT INTO ' + dbTracksTableName + ' VALUES(' + tracksSchemaQ.join(',') + ')',
                       [
-                          trackPoint.timestamp,
+                          new Date(trackPoint.timestamp).toISOString(),
                           trackPoint.longitude,
                           trackPoint.latitude,
                           trackPoint.altitude,
@@ -125,12 +125,18 @@ function dbInsert(trackPoint)
     return rowid;
 }
 
-function dbReadAll(orderQ)
+function dbReadAll(orderQ, limit)
 {
     var db = dbGetHandle()
+
+    var limitQ = "";
+    if (limit > 0) {
+        limitQ = " limit " + limit;
+    }
+
     db.transaction(function (tx) {
         var results = tx.executeSql(
-                    'SELECT rowid,' + tracksSchemaFields.join(',') + ' FROM ' + dbTracksTableName + ' order by rowid ' + orderQ)
+                    'SELECT rowid,' + tracksSchemaFields.join(',') + ' FROM ' + dbTracksTableName + ' order by rowid ' + orderQ + limitQ)
         for (var i = 0; i < results.rows.length; i++) {
             listModel.append({
                                 id: results.rows.item(i).rowid,

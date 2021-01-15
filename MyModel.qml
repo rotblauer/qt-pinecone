@@ -54,5 +54,5 @@ import "Database.js" as DBJS
 
 ListModel {
     id: listModel
-    Component.onCompleted: DBJS.dbReadAll('desc')
+    Component.onCompleted: DBJS.dbReadAll('desc', 30)
 }

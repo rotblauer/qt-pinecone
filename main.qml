@@ -2,10 +2,15 @@ import QtQuick 2.10			//Item
 import QtQuick.LocalStorage 2.10
 import QtPositioning 5.13   //Positioning
 import QtQuick.Controls 2.1	//Dialog
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.2
 import "Database.js" as DBJS
 
 Item {
 	id: window
+    visible: true
+    width: Screen.width
+    height: Screen.height
 
 	function api_post(callback, end_point, send_data, params) {
         var xhr = new XMLHttpRequest();
@@ -117,26 +122,15 @@ Item {
         return "source error";
     }
 
-//	Column {
-//	    id: mycolumn
-//        anchors.centerIn: parent
-//
-//        Label {
-//            id: mylabel2
-//            anchors.horizontalCenter: parent.horizontalCenter
-//            text: "i am text"
-//        }
-//	}
-    Column {
-        anchors.centerIn: parent
-
-        Row {
+    ColumnLayout {
+        anchors.fill: parent
+        RowLayout {
             Text {
                 id: positionText
                 text: "position text"
             }
         }
-        Row {
+        RowLayout {
             Text {
                 id: positionMethodText
                 text: "position method text"
@@ -148,7 +142,7 @@ Item {
 //                text: "hello world"
 //            }
 //        }
-        Row {
+        RowLayout {
 //            Button {
 //                text: "and click me!"
 //                onClicked: {
@@ -177,9 +171,10 @@ Item {
                 }
             }
         }
-        Row {
-            Grid {
+        RowLayout {
+            GridLayout {
                 id: mygrid
+
                 columns: 2
 
                 Button {
@@ -200,20 +195,9 @@ Item {
             }
         }
 
-        Row {
-            Text {
-                id: statusText
-
-                color: "red"
-//                Layout.fillWidth: true
-                font.bold: true
-                font.pointSize: 20
-
-                text: "status here"
-            }
-        }
-        Row {
+        RowLayout {
             id: myrowlayout
+
             TextField {
                 id: inputstuff
                 placeholderText: "Write something ..."
@@ -227,24 +211,45 @@ Item {
             Button {
                 id: saveButton
                 text: "Save field"
+
+                function insertrec() {
+                    var rowid = parseInt(DBJS.dbInsert("any_date", inputstuff.text, 42), 10)
+                    if (rowid) {
+                        listView.model.setProperty(listView.currentIndex, "id", rowid)
+                        listView.forceLayout()
+                    }
+                    return rowid;
+                }
+
+                function initrec_new() {
+
+                    inputstuff.clear()
+
+                    listView.model.insert(0, {
+                                              date: "",
+                                              trip_desc: "",
+                                              distance: 0
+                                          })
+                    listView.currentIndex = 0
+                }
+
+                function setlistview() {
+                    listView.model.setProperty(listView.currentIndex, "date",
+                                               "any_date")
+                    listView.model.setProperty(listView.currentIndex, "trip_desc",
+                                               inputstuff.text)
+                    listView.model.setProperty(listView.currentIndex, "distance",
+                                               42)
+                }
+
                 onClicked: {
                     console.log("Thinking about saving: ", inputstuff.text);
-                    var rowid = DBJS.dbInsert("any_date", inputstuff.text, 42);
-
+                    var rowid = insertrec();
                     if (rowid) {
                         console.log("OK saved, row id:", rowid);
-
-                        listView.model.setProperty(listView.currentIndex, "id", +rowid)
+                        setlistview();
+                        initrec();
                         listView.forceLayout();
-
-                        // fn
-                        listView.model.setProperty(listView.currentIndex, "date",
-                                                   "any_date")
-                        listView.model.setProperty(listView.currentIndex, "trip_desc",
-                                                   inputstuff.text)
-                        listView.model.setProperty(listView.currentIndex, "distance",
-                                                   42)
-                        inputstuff.text = ""
                     }
 
                 }
@@ -260,35 +265,38 @@ Item {
             color: "lightgreen"
         }
     }
+    ListView {
+        id: listView
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        model: MyModel {}
+        delegate: MyDelegate {
+//            onClicked: listView.currentIndex = index
+        }
+//        // Don't allow changing the currentIndex while the user is creating/editing values.
+//        enabled: !window.creatingNewEntry && !window.editingEntry
 
-    Row {
-        height: 300
-        width: parent.width
-        ListView {
-            id: listView
-    //        Layout.fillWidth: true
-    //        Layout.fillHeight: true
-//            anchors.fill: parent
-            width: parent.width
-            height: parent.height
-            model: MyModel {}
-            delegate: MyDelegate {
-                onClicked: listView.currentIndex = index
-            }
-    //        // Don't allow changing the currentIndex while the user is creating/editing values.
-    //        enabled: !window.creatingNewEntry && !window.editingEntry
+        highlight: highlightBar
+        highlightFollowsCurrentItem: true
+        focus: true
 
-            highlight: highlightBar
-            highlightFollowsCurrentItem: true
-            focus: true
-
-            header: Component {
-                Text {
-                    text: "Saved activities"
-                }
+        header: Component {
+            Text {
+                text: "Saved activities"
             }
         }
     }
+    Text {
+        id: statusText
+
+        color: "red"
+//                Layout.fillWidth: true
+        font.bold: true
+        font.pointSize: 20
+
+        text: "status here"
+    }
+
 
     Dialog {
         id: dialog

@@ -50,6 +50,7 @@
 
 import QtQuick 2.10
 import QtQuick.LocalStorage 2.10
+import QtQuick.Layouts 1.11
 
 Item {
     id: delegate
@@ -57,17 +58,17 @@ Item {
     width: parent.width
     height: rDate.implicitHeight
 
-//    required property int index
-//    required property int distance
-//    required property string trip_desc
-//    required property string date
+    required property int index
+    required property int distance
+    required property string trip_desc
+    required property string date
 
-    property int index
-    property int distance
-    property string trip_desc
-    property string date
+//    property int index
+//    property int distance
+//    property string trip_desc
+//    property string date
 
-    signal clicked
+    signal clicked()
 
     Rectangle {
         id: baseRec
@@ -79,7 +80,7 @@ Item {
             anchors.fill: parent
             onClicked: delegate.clicked()
         }
-        Grid {
+        GridLayout {
             anchors.fill:parent
             columns: 3
 
@@ -87,20 +88,20 @@ Item {
                 id: rDate
                 text: delegate.date
                 font.pixelSize: 22
+                Layout.preferredWidth: parent.width / 4
                 width: parent.width / 4
                 color: "black"
             }
             Text {
                 id: rDesc
                 text: delegate.trip_desc
-                font.pixelSize: 22
+                Layout.fillWidth: true
                 color: "black"
             }
             Text {
                 id: rDistance
                 text: delegate.distance
-                font.pixelSize: 22
-//                alignment: Qt.AlignRight
+                Layout.alignment: Qt.AlignRight
                 color: "black"
             }
         }

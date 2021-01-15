@@ -55,18 +55,24 @@ import QtQuick.Layouts 1.11
 Item {
     id: delegate
 
-    width: parent.width
-    height: rDate.implicitHeight
+    width: listView.width
+//    Layout.fillWidth: true
+    height: 18
 
     required property int index
-    required property int distance
-    required property string trip_desc
-    required property string date
+//    required property int distance
+//    required property string trip_desc
+//    required property string date
 
-//    property int index
-//    property int distance
-//    property string trip_desc
-//    property string date
+      required property string timestamp
+      required property real longitude
+      required property real latitude
+      required property real altitude
+      required property real direction
+      required property real horizontal_accuracy
+      required property real vertical_accuracy
+      required property real speed
+      required property real vertical_speed
 
     signal clicked()
 
@@ -82,27 +88,73 @@ Item {
         }
         GridLayout {
             anchors.fill:parent
-            columns: 3
+            columns: 9
 
             Text {
-                id: rDate
-                text: delegate.date
-                Layout.preferredWidth: parent.width / 4
-                width: parent.width / 4
-                color: "black"
-            }
-            Text {
-                id: rDesc
-                text: delegate.trip_desc
+                id: r_timestamp
+                text: delegate.timestamp
                 Layout.fillWidth: true
-                color: "black"
             }
             Text {
-                id: rDistance
-                text: delegate.distance
-                Layout.alignment: Qt.AlignRight
-                color: "black"
+                id: r_longitude
+                text: delegate.longitude
+                Layout.fillWidth: true
             }
+            Text {
+                id: r_latitude
+                text: delegate.latitude
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_altitude
+                text: delegate.altitude
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_direction
+                text: delegate.direction
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_horizontal_accuracy
+                text: delegate.horizontal_accuracy
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_vertical_accuracy
+                text: delegate.vertical_accuracy
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_speed
+                text: delegate.speed
+                Layout.fillWidth: true
+            }
+            Text {
+                id: r_vertical_speed
+                text: delegate.vertical_speed
+                Layout.fillWidth: true
+            }
+
+//            Text {
+//                id: rDate
+//                text: delegate.date
+//                Layout.preferredWidth: parent.width / 4
+//                width: parent.width / 4
+//                color: "black"
+//            }
+//            Text {
+//                id: rDesc
+//                text: delegate.trip_desc
+//                Layout.fillWidth: true
+//                color: "black"
+//            }
+//            Text {
+//                id: rDistance
+//                text: delegate.distance
+//                Layout.alignment: Qt.AlignRight
+//                color: "black"
+//            }
         }
     }
 }

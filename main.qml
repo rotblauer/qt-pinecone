@@ -88,34 +88,86 @@ ApplicationWindow {
         }
     }
 
+    function withPrec(value, prec) {
+        return Math.round(value * prec) / prec;
+    }
+    function getSavedPositionsCount() {
+        var count = DBJS.dbCount();
+        return count;
+    }
+
+    function savePosition(position) {
+        var precLL = Math.pow(10, 6); // lng,lat
+        var precVel = Math.pow(10, 2); // velocities
+        var positionObject = {
+                              timestamp: position.timestamp + "",
+                              longitude: withPrec(position.coordinate.longitude, precLL),
+                              latitude: withPrec(position.coordinate.latitude, precLL),
+                              altitude: withPrec(position.coordinate.altitude, precVel) || 0,
+                              direction: withPrec(position.direction, precVel) || -1,
+                              horizontal_accuracy: withPrec(position.horizontal_accuracy, precVel) || -1,
+                              vertical_accuracy: withPrec(position.vertical_accuracy, precVel) || -1,
+                              speed: withPrec(position.speed, precVel) || -1,
+                              vertical_speed: withPrec(position.vertical_speed, precVel) || -1
+        };
+        console.log("Thinking about saving: ", JSON.stringify(positionObject));
+        var rowid = parseInt(DBJS.dbInsert(positionObject), 10);
+        if (rowid) {
+            // Manually insert a COPY of the record into the listview model.
+            listView.model.insert(0, positionObject);
+            if (listView.model.length > 30)
+                listView.model.pop();
+            listView.currentIndex = 0;
+            console.log("Save OK", rowid);
+            listView.forceLayout()
+            var count = getSavedPositionsCount();
+            console.log("db contains", count, "entries");
+        }
+        return rowid;
+    }
+    function logPosition(position) {
+        console.log("position.timestamp", position.timestamp)
+        console.log("position.coordinate.longitude", position.coordinate.longitude)
+        console.log("position.coordinate.latitude", position.coordinate.latitude)
+        console.log("position.coordinate.altitude", position.coordinate.altitude)
+        console.log("position.coordinate.isValid", position.coordinate.isValid)
+        console.log("position.altitudeValid", position.altitudeValid)
+        console.log("position.direction", position.direction)
+        console.log("position.directionValid", position.directionValid)
+        console.log("position.horizontalAccuracy", position.horizontalAccuracy)
+        console.log("position.horizontalAccuracyValid", position.horizontalAccuracyValid)
+        console.log("position.latitudeValid", position.latitudeValid)
+        console.log("position.longitudeValid", position.longitudeValid)
+        console.log("position.magneticVariation", position.magneticVariation)
+        console.log("position.magneticVariationValid", position.magneticVariationValid)
+        console.log("position.speed", position.speed)
+        console.log("position.speedValid", position.speedValid)
+        console.log("position.verticalAccuracy", position.verticalAccuracy)
+        console.log("position.verticalAccuracyValid", position.verticalAccuracyValid)
+        console.log("position.verticalSpeed", position.verticalSpeed)
+        console.log("position.verticalSpeedValid", position.verticalSpeedValid)
+    }
+
     PositionSource {
         id: positionSource
         updateInterval: 1000
-        //      active: true
+        active: true
         // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
             console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
-//            console.log("(onPositionChanged) position", positionSource.position)
-            console.log("position.coordinate.latitude", positionSource.position.coordinate.latitude)
-            console.log("position.coordinate.longitude", positionSource.position.coordinate.longitude)
-            console.log("position.coordinate.altitude", positionSource.position.coordinate.altitude)
-            console.log("position.coordinate.isValid", positionSource.position.coordinate.isValid)
-            console.log("position.altitudeValid", positionSource.position.altitudeValid)
-            console.log("position.direction", positionSource.position.direction)
-            console.log("position.directionValid", positionSource.position.directionValid)
-            console.log("position.horizontalAccuracy", positionSource.position.horizontalAccuracy)
-            console.log("position.horizontalAccuracyValid", positionSource.position.horizontalAccuracyValid)
-            console.log("position.latitudeValid", positionSource.position.latitudeValid)
-            console.log("position.longitudeValid", positionSource.position.longitudeValid)
-            console.log("position.magneticVariation", positionSource.position.magneticVariation)
-            console.log("position.magneticVariationValid", positionSource.position.magneticVariationValid)
-            console.log("position.speed", positionSource.position.speed)
-            console.log("position.speedValid", positionSource.position.speedValid)
-            console.log("position.timestamp", positionSource.position.timestamp)
-            console.log("position.verticalAccuracy", positionSource.position.verticalAccuracy)
-            console.log("position.verticalAccuracyValid", positionSource.position.verticalAccuracyValid)
-            console.log("position.verticalSpeed", positionSource.position.verticalSpeed)
-            console.log("position.verticalSpeedValid", positionSource.position.verticalSpeedValid)
+            console.log("positionSource.method", printableMethod(positionSource.supportedPositioningMethods))
+
+            if (positionSource.position && positionSource.position.coordinate.isValid) {
+                var savedRowId = savePosition(positionSource.position);
+                if (savedRowId > 1) {
+                    logPosition(positionSource.position);
+                    statusText.text = "GPS: OK";
+                } else {
+                    statusText.text = "DB: save failed";
+                }
+            } else {
+                statusText.text = "GPS: invalid position";
+            }
         }
 
         onSourceErrorChanged: {
@@ -132,13 +184,13 @@ ApplicationWindow {
     }
     function printableMethod(method) {
         if (method === PositionSource.SatellitePositioningMethods)
-            return "Satellite"
+            return "sat"
         else if (method === PositionSource.NoPositioningMethods)
-            return "Not available"
+            return "na"
         else if (method === PositionSource.NonSatellitePositioningMethods)
-            return "Non-satellite"
+            return "nsat"
         else if (method === PositionSource.AllPositioningMethods)
-            return "Multiple"
+            return "a"
         return "source error"
     }
 
@@ -179,7 +231,6 @@ ApplicationWindow {
                         positionMethodText.text = "(nmea filesource): " + printableMethod(
                                     positionSource.supportedPositioningMethods)
                     }
-//                    positionSource.nmeaSource = "SpecialDelivery2.nmea"
                     if (!positionSource.active) {
                         positionSource.start()
                     }
@@ -233,31 +284,8 @@ ApplicationWindow {
                 Material.foreground: Material.Green
                 //                highlighted: true
                 //                Material.accent: Material.Orange
-
-                function save() {
-                    console.log("Thinking about saving: ", inputstuff.text)
-                    var rowid = parseInt(DBJS.dbInsert("any_date", inputstuff.text, 42), 10);
-                    if (rowid) {
-                        // Manually insert a COPY of the record into the listview model.
-                        listView.model.insert(0, {
-                                                  date: "any_date",
-                                                  trip_desc: inputstuff.text,
-                                                  distance: 42
-                                              })
-                        listView.currentIndex = 0;
-                        console.log("Save OK", rowid);
-                        listView.forceLayout()
-                        inputstuff.clear()
-
-                        var count = DBJS.dbCount();
-                        console.log("db contains", count, "entries");
-                        return;
-                    }
-                    console.log("Save failed");
-                }
-
                 onClicked: {
-                    save()
+                    console.log("click, but noop!");
                 }
             }
 

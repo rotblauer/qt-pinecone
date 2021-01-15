@@ -48,82 +48,103 @@
 **
 ****************************************************************************/
 
+const dbName = "Cat_Tracks_DB";
+const dbEstimatedSize = 1000000 * 100; // 100 MB -> 100000000 bytes
+const dbVersion = "0";
+const dbDescription = "for cats track em";
+const dbTracksTableName = "cat_tracks";
+
+const tracksSchema = [
+             'timestamp text',
+             'longitude numeric',
+             'latitude numeric',
+             'altitude numeric',
+             'direction numeric',
+             'horizontal_accuracy numeric',
+             'vertical_accuracy numeric',
+             'speed numeric',
+             'vertical_speed numeric',
+             ];
+
+// tracksSchemaQ is used for SQL insert syntax.
+var tracksSchemaQ = tracksSchema.map(function(el) {return "?"});
+var tracksSchemaFields = tracksSchema.map(function(el) {return el.substring(0, el.indexOf(' '))});
+
 function dbInit()
 {
-    var db = LocalStorage.openDatabaseSync("Activity_Tracker_DB", "", "Track exercise", 1000000)
+    var db = LocalStorage.openDatabaseSync(dbName, dbVersion, dbDescription, dbEstimatedSize) //
     try {
         db.transaction(function (tx) {
-//            tx.executeSql('DROP TABLE IF EXISTS trip_log')
-            tx.executeSql('CREATE TABLE IF NOT EXISTS trip_log (date text,trip_desc text,distance numeric)')
+            /*
+              https://www.sqlite.org/datatype3.html
+    TEXT
+    NUMERIC
+    INTEGER
+    REAL
+    BLOB
+            */
+//            tx.executeSql('DROP TABLE IF EXISTS ' + dbTracksTableName)
+            tx.executeSql('CREATE TABLE IF NOT EXISTS ' + dbTracksTableName + ' (' + tracksSchema.join(',') + ')')
         })
-        console.log("Created database");
+        console.log("Created database", dbTracksTableName);
     } catch (err) {
-        console.log("Error creating table in database: " + err)
+        console.log("Error creating table in database: " + dbTracksTableName + " " + err);
     };
 }
 
 function dbGetHandle()
 {
     try {
-        var db = LocalStorage.openDatabaseSync("Activity_Tracker_DB", "",
-                                               "Track exercise", 1000000)
+        var db = LocalStorage.openDatabaseSync(dbName, dbVersion, dbDescription, dbEstimatedSize)
     } catch (err) {
-        console.log("Error opening database: " + err)
+        console.log("Error opening database: " + dbTracksTableName + " " + err);
     }
     return db
 }
 
-function dbInsert(Pdate, Pdesc, Pdistance)
+function dbInsert(trackPoint)
 {
     var db = dbGetHandle()
     var rowid = 0;
     db.transaction(function (tx) {
-        tx.executeSql('INSERT INTO trip_log VALUES(?, ?, ?)',
-                      [Pdate, Pdesc, Pdistance])
+        tx.executeSql('INSERT INTO ' + dbTracksTableName + ' VALUES(' + tracksSchemaQ.join(',') + ')',
+                      [
+                          trackPoint.timestamp,
+                          trackPoint.longitude,
+                          trackPoint.latitude,
+                          trackPoint.altitude,
+                          trackPoint.direction,
+                          trackPoint.horizontal_accuracy,
+                          trackPoint.vertical_accuracy,
+                          trackPoint.speed,
+                          trackPoint.vertical_speed,
+                      ])
         var result = tx.executeSql('SELECT last_insert_rowid()')
         rowid = result.insertId
-
-//        listModel.insert(0, {
-//                             date: Pdate,
-//                             trip_desc: Pdesc,
-//                             distance: Pdistance
-//                         })
     })
     return rowid;
 }
 
-function dbReadAll()
+function dbReadAll(orderQ)
 {
     var db = dbGetHandle()
     db.transaction(function (tx) {
         var results = tx.executeSql(
-                    'SELECT rowid,date,trip_desc,distance FROM trip_log order by rowid desc')
+                    'SELECT rowid,' + tracksSchemaFields.join(',') + ' FROM ' + dbTracksTableName + ' order by rowid ' + orderQ)
         for (var i = 0; i < results.rows.length; i++) {
             listModel.append({
-                                 id: results.rows.item(i).rowid,
-                                 checked: " ",
-                                 date: results.rows.item(i).date,
-                                 trip_desc: results.rows.item(i).trip_desc,
-                                 distance: results.rows.item(i).distance
+                                id: results.rows.item(i).rowid,
+                                timestamp: results.rows.item(i).timestamp,
+                                longitude: results.rows.item(i).longitude,
+                                latitude: results.rows.item(i).latitude,
+                                altitude: results.rows.item(i).altitude,
+                                direction: results.rows.item(i).direction,
+                                horizontal_accuracy: results.rows.item(i).horizontal_accuracy,
+                                vertical_accuracy: results.rows.item(i).vertical_accuracy,
+                                speed: results.rows.item(i).speed,
+                                vertical_speed: results.rows.item(i).vertical_speed
                              })
         }
-    })
-}
-
-function dbUpdate(Pdate, Pdesc, Pdistance, Prowid)
-{
-    var db = dbGetHandle()
-    db.transaction(function (tx) {
-        tx.executeSql(
-                    'update trip_log set date=?, trip_desc=?, distance=? where rowid = ?', [Pdate, Pdesc, Pdistance, Prowid])
-    })
-}
-
-function dbDeleteRow(Prowid)
-{
-    var db = dbGetHandle()
-    db.transaction(function (tx) {
-        tx.executeSql('delete from trip_log where rowid = ?', [Prowid])
     })
 }
 
@@ -131,7 +152,7 @@ function dbCount() {
     var db = dbGetHandle()
     var count = 0
     db.transaction(function(tx) {
-        var result = tx.executeSql('SELECT COUNT(rowid) as count FROM trip_log')
+        var result = tx.executeSql('SELECT COUNT(rowid) as count FROM ' + dbTracksTableName)
         count = result.rows.item(0).count;
     })
     return count;

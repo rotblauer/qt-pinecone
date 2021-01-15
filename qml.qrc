@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MyDelegate.qml</file>
+        <file>MyModel.qml</file>
+        <file>Database.js</file>
+        <file>output.nmea</file>
+    </qresource>
+</RCC>

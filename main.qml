@@ -8,12 +8,21 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.11
 import QtQuick.Window 2.2
 import "Database.js" as DBJS
+import Qt.labs.settings 1.0
 
 Item {
     id: window
     visible: true
-    width: Screen.width
-    height: Screen.height
+    width: 400 // Screen.width
+    height: 800 // Screen.height
+
+
+    Settings {
+        property alias x: window.x
+        property alias y: window.y
+        property alias width: window.width
+        property alias height: window.height
+    }
 
     function api_post(callback, end_point, send_data, params) {
         var xhr = new XMLHttpRequest()
@@ -74,52 +83,33 @@ Item {
 
     PositionSource {
         id: positionSource
-        //        updateInterval: 1000
-
-        //        active: true
+        updateInterval: 1000
+//      active: true
+//      nmeaSource: "output.nmea"
         onPositionChanged: {
             console.log("(onPositionChanged) position", positionSource.position)
 
-            //            var coord = positionSource.position.coordinate;
-            //            positionText.text = coord.longitude + ", " + coord.latitude;
             console.log("positionSource.nmeaSource", positionSource.nmeaSource)
-            console.log("position.coordinate.latitude",
-                        positionSource.position.coordinate.latitude)
-            console.log("position.coordinate.longitude",
-                        positionSource.position.coordinate.longitude)
-            console.log("position.coordinate.altitude",
-                        positionSource.position.coordinate.altitude)
-            console.log("position.coordinate.isValid",
-                        positionSource.position.coordinate.isValid)
-            console.log("position.altitudeValid",
-                        positionSource.position.altitudeValid)
+            console.log("position.coordinate.latitude", positionSource.position.coordinate.latitude)
+            console.log("position.coordinate.longitude", positionSource.position.coordinate.longitude)
+            console.log("position.coordinate.altitude", positionSource.position.coordinate.altitude)
+            console.log("position.coordinate.isValid", positionSource.position.coordinate.isValid)
+            console.log("position.altitudeValid", positionSource.position.altitudeValid)
             console.log("position.direction", positionSource.position.direction)
-            console.log("position.directionValid",
-                        positionSource.position.directionValid)
-            console.log("position.horizontalAccuracy",
-                        positionSource.position.horizontalAccuracy)
-            console.log("position.horizontalAccuracyValid",
-                        positionSource.position.horizontalAccuracyValid)
-            console.log("position.latitudeValid",
-                        positionSource.position.latitudeValid)
-            console.log("position.longitudeValid",
-                        positionSource.position.longitudeValid)
-            console.log("position.magneticVariation",
-                        positionSource.position.magneticVariation)
-            console.log("position.magneticVariationValid",
-                        positionSource.position.magneticVariationValid)
+            console.log("position.directionValid", positionSource.position.directionValid)
+            console.log("position.horizontalAccuracy", positionSource.position.horizontalAccuracy)
+            console.log("position.horizontalAccuracyValid", positionSource.position.horizontalAccuracyValid)
+            console.log("position.latitudeValid", positionSource.position.latitudeValid)
+            console.log("position.longitudeValid", positionSource.position.longitudeValid)
+            console.log("position.magneticVariation", positionSource.position.magneticVariation)
+            console.log("position.magneticVariationValid", positionSource.position.magneticVariationValid)
             console.log("position.speed", positionSource.position.speed)
-            console.log("position.speedValid",
-                        positionSource.position.speedValid)
+            console.log("position.speedValid", positionSource.position.speedValid)
             console.log("position.timestamp", positionSource.position.timestamp)
-            console.log("position.verticalAccuracy",
-                        positionSource.position.verticalAccuracy)
-            console.log("position.verticalAccuracyValid",
-                        positionSource.position.verticalAccuracyValid)
-            console.log("position.verticalSpeed",
-                        positionSource.position.verticalSpeed)
-            console.log("position.verticalSpeedValid",
-                        positionSource.position.verticalSpeedValid)
+            console.log("position.verticalAccuracy", positionSource.position.verticalAccuracy)
+            console.log("position.verticalAccuracyValid", positionSource.position.verticalAccuracyValid)
+            console.log("position.verticalSpeed", positionSource.position.verticalSpeed)
+            console.log("position.verticalSpeedValid", positionSource.position.verticalSpeedValid)
         }
 
         onSourceErrorChanged: {
@@ -164,28 +154,13 @@ Item {
                 text: "position method text"
             }
         }
-        //        Row {
-        //            Text {
-        //                id: mytext
-        //                text: "hello world"
-        //            }
-        //        }
         RowLayout {
-            //            Button {
-            //                text: "and click me!"
-            //                onClicked: {
-            ////                    dialog.open()
-            //                    mytext.text = inputstuff.text
-            //                }
-            //            }
             Button {
                 id: locateButton
                 text: "Locate & update"
                 onClicked: {
-                    positionSource.start()
                     if (positionSource.supportedPositioningMethods
                             === PositionSource.NoPositioningMethods) {
-                        //                    if (positionSource.supportedPositioningMethods === PositionSource.NonSatellitePositioningMethods) {
                         console.log("No positioning methods")
                         positionSource.nmeaSource = "output.nmea"
                         positionMethodText.text = "(nmea filesource): " + printableMethod(
@@ -200,6 +175,9 @@ Item {
                     }
                     positionMethodText.text = printableMethod(
                                 positionSource.supportedPositioningMethods)
+                    if (!positionSource.active) {
+                        positionSource.start()
+                    }
                     positionSource.update()
                 }
             }
@@ -343,49 +321,6 @@ Item {
         DBJS.dbInit()
     }
 }
-//        Item {
-//            width: 200
-//            height: 200
-//            Rectangle {
-//                x: 50
-//                y: 50
-//                width: 100
-//                height: 100
-//                color: "green"
-//             }
-//             Rectangle {
-//                x: 100
-//                y: 100
-//                width: 50
-//                height: 50
-//                color: "yellow"
-//             }
-//        }
-
-//	Column {
-//		anchors.centerIn: parent
-//		TextField {
-//			id: inputstuff
-//			anchors.horizontalCenter: parent.horizontalCenter
-//			placeholderText: "Write something ..."
-//		}
-//		Button {
-//			anchors.horizontalCenter: parent.horizontalCenter
-//			text: "and click me!"
-//			onClicked: dialog.open()
-//		}
-//	}
-//	Dialog {
-//		id: dialog
-//		x: (window.width - width) * 0.5
-//		y: (window.height - height) * 0.5
-//		contentWidth: window.width * 0.5
-//		contentHeight: window.height * 0.25
-//		standardButtons: Dialog.Ok
-//		contentItem: Label {
-//			text: inputstuff.text
-//		}
-
 
 /*##^##
 Designer {

@@ -1,21 +1,26 @@
 import QtQuick 2.10
-//Item
-import QtQuick.LocalStorage 2.10
+
+import QtQuick.Controls 2.12
+import QtQuick.Controls.Material 2.12
+
 import QtPositioning 5.13
-//Positioning
-import QtQuick.Controls 2.1
-//Dialog
+import QtQuick.LocalStorage 2.10
+
 import QtQuick.Layouts 1.11
 import QtQuick.Window 2.2
+
 import "Database.js" as DBJS
 import Qt.labs.settings 1.0
 
-Item {
+
+ApplicationWindow {
     id: window
     visible: true
     width: 400 // Screen.width
     height: 800 // Screen.height
 
+    Material.theme: Material.Dark
+    Material.accent: Material.Purple
 
     Settings {
         property alias x: window.x
@@ -70,22 +75,24 @@ Item {
 
     function processRequest(xhr, callback, e) {
         if (xhr.readyState === 4) {
-            console.log(xhr.status)
-            var response
+            console.log(xhr.status);
+            var response;
             try {
-                response = JSON.parse(xhr.responseText)
-            } catch (e) {
-                response = xhr.responseText
+                response = JSON.parse(xhr.responseText);
+            } catch (ee) {
+                response = xhr.responseText;
             }
-            callback(xhr.status, response)
+            callback(xhr.status, response);
+        } else if (e) {
+            console.log("request error:", e);
         }
     }
 
     PositionSource {
         id: positionSource
         updateInterval: 1000
-//      active: true
-//      nmeaSource: "output.nmea"
+        //      active: true
+        //      nmeaSource: "output.nmea"
         onPositionChanged: {
             console.log("(onPositionChanged) position", positionSource.position)
 
@@ -208,9 +215,9 @@ Item {
 
         RowLayout {
             id: myrowlayout
-
             TextField {
                 id: inputstuff
+                Material.accent: Material.Orange
                 placeholderText: "Write something ..."
             }
             Button {
@@ -219,9 +226,15 @@ Item {
                     dialog.open()
                 }
             }
+
             Button {
                 id: saveButton
                 text: "Save field"
+
+                //                Material.background: Material.Teal
+                Material.foreground: Material.Green
+                //                highlighted: true
+                //                Material.accent: Material.Orange
 
                 function save() {
                     console.log("Thinking about saving: ", inputstuff.text)
@@ -246,6 +259,7 @@ Item {
                     save()
                 }
             }
+
         }
 
         RowLayout {
@@ -281,6 +295,19 @@ Item {
             Layout.fillWidth: true
             height: 100
 
+            Pane {
+                width: 120
+                height: 120
+                Layout.fillWidth: true
+
+                Material.elevation: 6
+
+                Label {
+                    text: qsTr("I'm a card!")
+                    anchors.centerIn: parent
+                }
+            }
+
             Text {
                 id: statusText
 
@@ -290,7 +317,15 @@ Item {
 
                 text: "status here"
             }
+
         }
+
+        RowLayout {
+            id: rowLayout2
+            width: 100
+            height: 100
+        }
+
     }
 
     Component {
@@ -316,6 +351,7 @@ Item {
             text: inputstuff.text
         }
     }
+
 
     Component.onCompleted: {
         DBJS.dbInit()

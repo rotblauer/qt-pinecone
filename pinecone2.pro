@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = pinecone2
-QT += quick qml positioning
+QT += quick qml positioning quickcontrols2
 
 CONFIG += c++11
 

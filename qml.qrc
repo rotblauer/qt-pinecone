@@ -6,5 +6,6 @@
         <file>Database.js</file>
         <file>SpecialDelivery2.nmea</file>
         <file>API.js</file>
+        <file>secrets.js</file>
     </qresource>
 </RCC>

@@ -87,7 +87,9 @@ function dbReadAllToListModel(orderQ, limit)
 
     db.transaction(function (tx) {
         var results = tx.executeSql(
-                    'SELECT rowid,' + tracksSchemaFields.join(',') + ' FROM ' + dbTracksTableName + ' order by rowid ' + orderQ + limitQ)
+                    'SELECT rowid,' + tracksSchemaFields.join(',') +
+            ' FROM ' + dbTracksTableName +
+            ' order by rowid ' + orderQ + limit)
         for (var i = 0; i < results.rows.length; i++) {
             listModel.append({
                                 id: results.rows.item(i).rowid,
@@ -105,6 +107,40 @@ function dbReadAllToListModel(orderQ, limit)
     })
 }
 
+function dbRead(orderQ, limit)
+{
+    var db = dbGetHandle()
+
+    var limitQ = "";
+    if (limit > 0) {
+        limitQ = " limit " + limit;
+    }
+
+    var out = [];
+    db.transaction(function (tx) {
+        var results = tx.executeSql(
+            'SELECT rowid,' + tracksSchemaFields.join(',') +
+            ' FROM ' + dbTracksTableName +
+            ' ORDER BY rowid ' + orderQ + limitQ)
+
+        for (var i = 0; i < results.rows.length; i++) {
+            out.append({
+                id: results.rows.item(i).rowid,
+                timestamp: results.rows.item(i).timestamp,
+                longitude: results.rows.item(i).longitude,
+                latitude: results.rows.item(i).latitude,
+                altitude: results.rows.item(i).altitude,
+                direction: results.rows.item(i).direction,
+                horizontal_accuracy: results.rows.item(i).horizontal_accuracy,
+                vertical_accuracy: results.rows.item(i).vertical_accuracy,
+                speed: results.rows.item(i).speed,
+                vertical_speed: results.rows.item(i).vertical_speed
+            })
+        }
+    })
+    return out;
+}
+
 function dbCount() {
     var db = dbGetHandle()
     var count = 0
@@ -115,7 +151,7 @@ function dbCount() {
     return count;
 }
 
-function dbDeleteRow(Prowids)
+function dbDeleteRows(Prowids)
 {
     var db = dbGetHandle()
     db.transaction(function (tx) {

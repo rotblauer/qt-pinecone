@@ -10,6 +10,8 @@ import QtQuick.Layouts 1.11
 import QtQuick.Window 2.2
 
 import "Database.js" as DBJS
+import "API.js" as API
+import "secrets.js" as SECRETS
 import Qt.labs.settings 1.0
 
 
@@ -27,11 +29,6 @@ ApplicationWindow {
         property alias y: window.y
         property alias width: window.width
         property alias height: window.height
-    }
-
-    function getDBRowsCount() {
-        var count = DBJS.dbCount();
-        return count;
     }
 
     function withPrec(value, prec) {
@@ -71,6 +68,100 @@ ApplicationWindow {
             updatePointsQueuedDisplay();
         }
         return rowid;
+    }
+
+    function point2GeoJSON(point) {
+        /*
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [125.6, 10.1]
+          },
+          "properties": {
+            "name": "Dinagat Islands"
+          }
+        }
+        	props["UUID"] = trackPointCurrent.Uuid
+        	props["Name"] = trackPointCurrent.Name
+        	props["Time"] = trackPointCurrent.Time
+        	props["UnixTime"] = trackPointCurrent.Time.Unix()
+        	props["Version"] = trackPointCurrent.Version
+        	props["Speed"] = trackPointCurrent.Speed
+        	props["Elevation"] = trackPointCurrent.Elevation
+        	props["Heading"] = trackPointCurrent.Heading
+        	props["Accuracy"] = trackPointCurrent.Accuracy
+
+        */
+        var f = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [point.longitude, point.latitude]
+            },
+            "properties": {
+                "UUID": "FIXME",
+                "Name": "FIXME",
+                "Version": "FIXME",
+                "Time": point.timestamp, // this should already by in ISO8601
+                "UnixTime": new Date(point.timestamp).getTime() / 1000,
+                "Speed": point.speed,
+                "Elevation": point.altitude === 0 ? null : point.altitude,
+                "Heading": point.direction,
+                "Accuracy": point.horizontal_accuracy
+            }
+        };
+        return f;
+    }
+
+    function pushBatching(batchSize) {
+        var entries = DBJS.dbRead('asc', 100);
+        if (entries.length === 0) {
+            console.log("no entries to push");
+            return;
+        }
+        var ids = [];
+        var geojsonFeatures = [];
+
+        for (var i = 0; i < entries.length; i++) {
+            geojsonFeatures.append(point2GeoJSON(entries[i]));
+            ids.append(entries[i].id);
+        }
+
+        var headers = {};
+        headers[SECRETS.appAuthorizationHeaderKey] = appAuthorizationHeaderValue;
+        API.api_post(SECRETS.appEndpoint, geojsonFeatures, {}, headers, function(status, resp) {
+            if (status !== 200) {
+                // TODO: Add a visual display for push status.
+                var responseText;
+                try {
+                    responseText = JSON.stringify(resp);
+                } catch (e) {
+                    responseText = resp;
+                }
+                console.log("error", status, responseText);
+                setStatusDisplay(pushStatusText, "error", status + ": " + responseText);
+                return;
+            }
+
+            console.log("pushed ok");
+            setStatusDisplay(pushStatusText, "info", status)
+
+            // Once push is confirmed 200, delete em.
+            DBJS.dbDeleteRows(ids);
+
+            if (entries.length === batchSize) {
+                // Our batch size was met which suggests that there
+                // may be more entries left to push.
+                // Recursion.
+                pushBatching(batchSize);
+            }
+        });
+    }
+
+    function getDBRowsCount() {
+        var count = DBJS.dbCount();
+        return count;
     }
 
     function updatePointsQueuedDisplay() {
@@ -114,9 +205,17 @@ ApplicationWindow {
             var statT = "GPS: OK";
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
+
+                // Save valid updated position.
                 var savedRowId = saveValidPosition(positionSource.position);
                 if (savedRowId > 1) {
-//                    logPosition(positionSource.position);
+                    // logPosition(positionSource.position);
+
+                    // Push (all, recursively) to API at simply batched intervals.
+                    if (savedRowId % 30 === 0) {
+                        pushBatching(30);
+                    }
+
                 } else {
                     statT = "DB: save failed";
                     stat = "error"
@@ -125,17 +224,17 @@ ApplicationWindow {
                 statT = "GPS: invalid position";
                 stat = "error"
             }
-            setStatusDisplay(stat, statT);
+            setStatusDisplay(gpsStatusText, stat, statT);
         }
 
         onSourceErrorChanged: {
             if (sourceError == PositionSource.NoError)
                 return
-            setStatusDisplay("error", sourceError)
+            setStatusDisplay(gpsStatusText, "error", sourceError)
             stop()
         }
         onUpdateTimeout: {
-            setStatusDisplay("warn", "update timed out");
+            setStatusDisplay(gpsStatusText, "warn", "update timed out");
         }
     }
     function printableMethod(method) {
@@ -166,22 +265,23 @@ ApplicationWindow {
         positionSource.update()
     }
 
-    function setStatusDisplay(qualitative, text) {
+    function setStatusDisplay(item, qualitative, text) {
+        // gpsStatusText, pushStatusText
         console.log(qualitative + ": " + text);
-        statusText.font.bold = false
+        item.font.bold = false
         switch (qualitative) {
         case "info":
-            statusText.color = Material.color(Material.Teal)
+            item.color = Material.color(Material.Teal)
             break;
         case "warn":
-            statusText.color = Material.color(Material.Orange)
+            item.color = Material.color(Material.Orange)
             break;
         case "error":
-            statusText.color = Material.color(Material.Red)
-            statusText.font.bold = true
+            item.color = Material.color(Material.Red)
+            item.font.bold = true
             break;
         }
-        statusText.text = text;
+        item.text = text;
     }
 
     ColumnLayout {
@@ -201,16 +301,22 @@ ApplicationWindow {
             }
             Text {
                 id: entriesCount
-                text: "<NUMENTRIES>"
+                text: "<NUM ENTRIES>"
                 color: Material.color(Material.Teal)
                 Layout.fillWidth: true
             }
             Text {
-                id: statusText
-                text: "<STATUS>"
+                id: gpsStatusText
+                text: "<GPS STATUS>"
                 color: Material.color(Material.Grey)
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
+            }
+            Text {
+                id: pushStatusText
+                text: "<PUSH STATUS>"
+                color: Material.color(Material.Grey)
+                Layout.fillWidth: true
             }
         }
 

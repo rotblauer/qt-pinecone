@@ -1,5 +1,5 @@
 
-function api_post(end_point, send_data, params, callback) {
+function api_post(end_point, send_data, params, headers, callback) {
     var xhr = new XMLHttpRequest()
     params = params || {}
 
@@ -19,6 +19,9 @@ function api_post(end_point, send_data, params, callback) {
     xhr.open('POST', request, true)
     xhr.setRequestHeader("Content-Type", "application/json")
     xhr.setRequestHeader("Accept", "application/json")
+    for (var h in headers) {
+        xhr.setRequestHeader(h, headers[h]);
+    }
     xhr.send(send_data)
 }
 

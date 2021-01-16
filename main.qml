@@ -59,7 +59,7 @@ ApplicationWindow {
             // Manually insert a COPY of the record into the listview model.
             listView.model.insert(0, positionObject);
             if (listView.model.count > 30) {
-                listView.model.remove(30, listView.model.count - 31);
+                listView.model.remove(30, listView.model.count - 30);
             }
 
             listView.currentIndex = 0;
@@ -134,17 +134,17 @@ ApplicationWindow {
         setStatusDisplay(pushStatusText, "warn", "Pushing...");
         API.api_post(SECRETS.appEndpoint, geojsonFeatures, {}, headers, function(status, resp) {
 
-            if (status !== 200) {
-                // TODO: Add a visual display for push status.
-                var responseText;
-                try {
-                    responseText = JSON.stringify(resp);
-                } catch (e) {
-                    responseText = resp;
-                }
-                setStatusDisplay(pushStatusText, "error", "Push status: " +  status + " " + responseText);
-                return;
-            }
+//            if (status !== 200) {
+//                // TODO: Add a visual display for push status.
+//                var responseText;
+//                try {
+//                    responseText = JSON.stringify(resp);
+//                } catch (e) {
+//                    responseText = resp;
+//                }
+//                setStatusDisplay(pushStatusText, "error", "Push status: " +  status + " " + responseText);
+//                return;
+//            }
 
             setStatusDisplay(pushStatusText, "info", status);
 
@@ -209,7 +209,7 @@ ApplicationWindow {
 
                 // Save valid updated position.
                 var savedRowId = saveValidPosition(positionSource.position);
-                if (savedRowId > 1) {
+                if (savedRowId) {
                     // logPosition(positionSource.position);
 
                     // Push (all, recursively) to API at simply batched intervals.

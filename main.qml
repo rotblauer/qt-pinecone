@@ -217,7 +217,7 @@ ApplicationWindow {
         onPositionChanged: {
             var stat = "info";
             var statT = "GPS: OK";
-            var batchSize = 10;
+            var batchSize = window.pushBatch;
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
 
@@ -308,21 +308,32 @@ ApplicationWindow {
 
         GridLayout {
 
-            columns: 1
+            columns: 2
             Layout.fillWidth: true
             height: 20
+            Layout.fillHeight: false
             TextInput {
 
                 id: pushBatchInput
+                font.pointSize: 12
+                Layout.fillWidth: true
                 validator: RegularExpressionValidator {
                     regularExpression: /\d+/
                 }
-                onEditingFinished: {
-                    if (distInput.text == "") {
-                        console.log("bad input");
-//                        statusText.text = "Please fill in the distance"
-                        distInput.forceActiveFocus()
-                    }
+                text: window.pushBatch
+//                onEditingFinished: {
+//                    if (pushBatchInput.text == "") {
+//                        console.log("bad input");
+////                        statusText.text = "Please fill in the distance"
+//                        pushBatchInput.forceActiveFocus()
+//                    }
+//                }
+            }
+            Button {
+                id: savePushBatchInput
+                text: "Save"
+                onClicked: {
+                    window.pushBatch = parseInt(pushBatchInput.text);
                 }
             }
         }

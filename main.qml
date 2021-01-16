@@ -42,10 +42,11 @@ ApplicationWindow {
 
         var positionObject = {
             timestamp: position.timestamp + "",
+            unix_timestamp: withPrec(new Date(position.timestamp).getTime() / 1000, 1),
             longitude: withPrec(position.coordinate.longitude, precLL),
             latitude: withPrec(position.coordinate.latitude, precLL),
             altitude: withPrec(position.coordinate.altitude, precVel) || 0,
-            direction: withPrec(position.direction, precVel) || -1,
+            direction: Math.round(position.direction) || -1,
             horizontal_accuracy: withPrec(position.horizontal_accuracy, precVel) || -1,
             vertical_accuracy: withPrec(position.vertical_accuracy, precVel) || -1,
             speed: withPrec(position.speed, precVel) || -1,
@@ -100,24 +101,31 @@ ApplicationWindow {
                 "coordinates": [point.longitude, point.latitude]
             },
             "properties": {
-                "UUID": "FIXME",
-                "Name": "FIXME",
+                "UUID": SECRETS.appCatOwnerName,
+                "Name": SECRETS.appUUID,
                 "Version": "FIXME",
                 "Time": point.timestamp, // this should already by in ISO8601
-                "UnixTime": new Date(point.timestamp).getTime() / 1000,
+                "UnixTime": point.unix_timestamp,
                 "Speed": point.speed,
-                "Elevation": point.altitude === 0 ? null : point.altitude,
                 "Heading": point.direction,
-                "Accuracy": point.horizontal_accuracy
+                "Accuracy": point.horizontal_accuracy,
             }
         };
+        //                 "Elevation": point.altitude === 0 ? null : point.altitude,
+        if (point.altitude !== 0) {
+            f["properties"]["Elevation"] = point.altitude;
+        }
         return f;
     }
 
+    // pushBatching is a recursive (on success) function which attempts to push
+    // all entries stored in the database in batches of batchSize.
+    // It will abort if the push encounters an error.
+    // It updates the push and status displays.
     function pushBatching(batchSize) {
         var entries = DBJS.dbRead('asc', batchSize);
         if (entries.length === 0) {
-            console.log("no entries to push");
+            console.log("DB empty");
             return;
         }
         var ids = [];
@@ -134,19 +142,18 @@ ApplicationWindow {
         setStatusDisplay(pushStatusText, "warn", "Pushing...");
         API.api_post(SECRETS.appEndpoint, geojsonFeatures, {}, headers, function(status, resp) {
 
-//            if (status !== 200) {
-//                // TODO: Add a visual display for push status.
-//                var responseText;
-//                try {
-//                    responseText = JSON.stringify(resp);
-//                } catch (e) {
-//                    responseText = resp;
-//                }
-//                setStatusDisplay(pushStatusText, "error", "Push status: " +  status + " " + responseText);
-//                return;
-//            }
+            if (status !== 200) {
+                var responseText;
+                try {
+                    responseText = JSON.stringify(resp);
+                } catch (e) {
+                    responseText = resp;
+                }
+                setStatusDisplay(pushStatusText, "error", "Pus status: " +  status + " " + responseText);
+                return;
+            }
 
-            setStatusDisplay(pushStatusText, "info", status);
+            setStatusDisplay(pushStatusText, "info", "Push status: " + status);
 
             // Once push is confirmed 200, delete em.
             DBJS.dbDeleteRows(ids);
@@ -171,6 +178,8 @@ ApplicationWindow {
     }
 
     function logPosition(position) {
+        console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
+        console.log("positionSource.method", printableMethod(positionSource.supportedPositioningMethods))
         console.log("position.timestamp", position.timestamp)
         console.log("position.coordinate.longitude", position.coordinate.longitude)
         console.log("position.coordinate.latitude", position.coordinate.latitude)
@@ -199,11 +208,9 @@ ApplicationWindow {
 //        active: true
         // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
-            console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
-            console.log("positionSource.method", printableMethod(positionSource.supportedPositioningMethods))
-
             var stat = "info";
             var statT = "GPS: OK";
+            var batchSize = 10;
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
 
@@ -213,8 +220,8 @@ ApplicationWindow {
                     // logPosition(positionSource.position);
 
                     // Push (all, recursively) to API at simply batched intervals.
-                    if (savedRowId % 30 === 0) {
-                        pushBatching(30);
+                    if (savedRowId % batchSize === 0) {
+                        pushBatching(batchSize);
                     }
 
                 } else {

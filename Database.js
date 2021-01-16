@@ -7,6 +7,7 @@ const dbTracksTableName = "cat_tracks";
 
 const tracksSchema = [
              'timestamp text',
+             'unix_timestamp numeric',
              'longitude numeric',
              'latitude numeric',
              'altitude numeric',
@@ -34,7 +35,7 @@ function dbInit()
     REAL
     BLOB
             */
-//            tx.executeSql('DROP TABLE IF EXISTS ' + dbTracksTableName)
+            tx.executeSql('DROP TABLE IF EXISTS ' + dbTracksTableName)
             tx.executeSql('CREATE TABLE IF NOT EXISTS ' + dbTracksTableName + ' (' + tracksSchema.join(',') + ')')
         })
         console.log("Created database", dbTracksTableName);
@@ -61,6 +62,7 @@ function dbInsert(trackPoint)
         tx.executeSql('INSERT INTO ' + dbTracksTableName + ' VALUES(' + tracksSchemaQ.join(',') + ')',
                       [
                           new Date(trackPoint.timestamp).toISOString(),
+                          trackPoint.unix_timestamp,
                           trackPoint.longitude,
                           trackPoint.latitude,
                           trackPoint.altitude,
@@ -89,11 +91,12 @@ function dbReadAllToListModel(orderQ, limit)
         var results = tx.executeSql(
                     'SELECT rowid,' + tracksSchemaFields.join(',') +
             ' FROM ' + dbTracksTableName +
-            ' order by rowid ' + orderQ + limitQ)
+            ' order by unix_timestamp ' + orderQ + limitQ)
         for (var i = 0; i < results.rows.length; i++) {
             listModel.append({
                                 id: results.rows.item(i).rowid,
                                 timestamp: results.rows.item(i).timestamp,
+                                unix_timestamp: results.rows.item(i).unix_timestamp,
                                 longitude: results.rows.item(i).longitude,
                                 latitude: results.rows.item(i).latitude,
                                 altitude: results.rows.item(i).altitude,
@@ -121,12 +124,13 @@ function dbRead(orderQ, limit)
         var results = tx.executeSql(
             'SELECT rowid,' + tracksSchemaFields.join(',') +
             ' FROM ' + dbTracksTableName +
-            ' ORDER BY rowid ' + orderQ + limitQ)
+            ' ORDER BY unix_timestamp ' + orderQ + limitQ)
 
         for (var i = 0; i < results.rows.length; i++) {
             out.push({
                 id: results.rows.item(i).rowid,
                 timestamp: results.rows.item(i).timestamp,
+                unix_timestamp: results.rows.item(i).unix_timestamp,
                 longitude: results.rows.item(i).longitude,
                 latitude: results.rows.item(i).latitude,
                 altitude: results.rows.item(i).altitude,

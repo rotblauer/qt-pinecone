@@ -89,7 +89,7 @@ function dbReadAllToListModel(orderQ, limit)
         var results = tx.executeSql(
                     'SELECT rowid,' + tracksSchemaFields.join(',') +
             ' FROM ' + dbTracksTableName +
-            ' order by rowid ' + orderQ + limit)
+            ' order by rowid ' + orderQ + limitQ)
         for (var i = 0; i < results.rows.length; i++) {
             listModel.append({
                                 id: results.rows.item(i).rowid,
@@ -124,7 +124,7 @@ function dbRead(orderQ, limit)
             ' ORDER BY rowid ' + orderQ + limitQ)
 
         for (var i = 0; i < results.rows.length; i++) {
-            out.append({
+            out.push({
                 id: results.rows.item(i).rowid,
                 timestamp: results.rows.item(i).timestamp,
                 longitude: results.rows.item(i).longitude,

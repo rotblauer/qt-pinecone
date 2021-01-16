@@ -7,8 +7,11 @@ function api_post(end_point, send_data, params, headers, callback) {
     for (var p in params) {
         parameters += "&" + p + "=" + params[p]
     }
-    var request = end_point + "?" + parameters
-    console.log(request)
+    if (parameters.length > 0) {
+        parameters = "?" + parameters;
+    }
+    var requestURL = end_point + parameters;
+    console.log(requestURL)
     send_data = JSON.stringify(send_data)
     console.log(send_data)
 
@@ -16,7 +19,7 @@ function api_post(end_point, send_data, params, headers, callback) {
         processRequest(xhr, callback)
     }
 
-    xhr.open('POST', request, true)
+    xhr.open('POST', requestURL, true)
     xhr.setRequestHeader("Content-Type", "application/json")
     xhr.setRequestHeader("Accept", "application/json")
     for (var h in headers) {
@@ -33,14 +36,14 @@ function api_get(end_point, params, callback) {
     for (var p in params) {
         parameters += "&" + p + "=" + params[p]
     }
-    var request = end_point + "?" + parameters
-    console.log(request)
+    var requestURL = end_point + "?" + parameters
+    console.log(requestURL)
 
     xhr.onreadystatechange = function () {
         processRequest(xhr, callback)
     }
 
-    xhr.open('GET', request, true)
+    xhr.open('GET', requestURL, true)
     xhr.setRequestHeader("Content-Type", "application/json")
     xhr.setRequestHeader("Accept", "application/json")
     xhr.send('')

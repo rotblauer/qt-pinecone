@@ -115,7 +115,7 @@ ApplicationWindow {
     }
 
     function pushBatching(batchSize) {
-        var entries = DBJS.dbRead('asc', 100);
+        var entries = DBJS.dbRead('asc', batchSize);
         if (entries.length === 0) {
             console.log("no entries to push");
             return;
@@ -124,13 +124,16 @@ ApplicationWindow {
         var geojsonFeatures = [];
 
         for (var i = 0; i < entries.length; i++) {
-            geojsonFeatures.append(point2GeoJSON(entries[i]));
-            ids.append(entries[i].id);
+            geojsonFeatures.push(point2GeoJSON(entries[i]));
+            ids.push(entries[i].id);
         }
 
         var headers = {};
-        headers[SECRETS.appAuthorizationHeaderKey] = appAuthorizationHeaderValue;
+        headers[SECRETS.appAuthorizationHeaderKey] = SECRETS.appAuthorizationHeaderValue;
+
+        setStatusDisplay(pushStatusText, "warn", "Pushing...");
         API.api_post(SECRETS.appEndpoint, geojsonFeatures, {}, headers, function(status, resp) {
+
             if (status !== 200) {
                 // TODO: Add a visual display for push status.
                 var responseText;
@@ -139,13 +142,11 @@ ApplicationWindow {
                 } catch (e) {
                     responseText = resp;
                 }
-                console.log("error", status, responseText);
-                setStatusDisplay(pushStatusText, "error", status + ": " + responseText);
+                setStatusDisplay(pushStatusText, "error", "Push status: " +  status + " " + responseText);
                 return;
             }
 
-            console.log("pushed ok");
-            setStatusDisplay(pushStatusText, "info", status)
+            setStatusDisplay(pushStatusText, "info", status);
 
             // Once push is confirmed 200, delete em.
             DBJS.dbDeleteRows(ids);
@@ -292,7 +293,7 @@ ApplicationWindow {
         anchors.topMargin: 0
         GridLayout {
             Layout.fillWidth: true
-            columns: 3
+            columns: 4
             Text {
                 id: positionMethodText
                 text: "<POSITIONING METHOD>"

@@ -24,14 +24,16 @@ ApplicationWindow {
     Material.theme: Material.Dark
     Material.accent: Material.Purple
 
-    property int pushBatch: 100
+    property int pushBatchSize: 100
+    property int pushBatchEvery: 100
 
     Settings {
         property alias x: window.x
         property alias y: window.y
         property alias width: window.width
         property alias height: window.height
-        property alias pushBatch: window.pushBatch
+        property alias pushBatchSize: window.pushBatchSize
+        property alias pushBatchEvery: window.pushBatchEvery
     }
 
     function withPrec(value, prec) {
@@ -217,7 +219,7 @@ ApplicationWindow {
         onPositionChanged: {
             var stat = "info";
             var statT = "GPS: OK";
-            var batchSize = window.pushBatch;
+
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
 
@@ -227,8 +229,8 @@ ApplicationWindow {
                     // logPosition(positionSource.position);
 
                     // Push (all, recursively) to API at simply batched intervals.
-                    if (savedRowId % batchSize === 0) {
-                        pushBatching(batchSize);
+                    if (savedRowId % window.pushBatchEvery === 0) {
+                        pushBatching(window.pushBatchSize);
                     }
 
                 } else {
@@ -307,33 +309,58 @@ ApplicationWindow {
         anchors.topMargin: 0
 
         GridLayout {
-
-            columns: 2
+            columns: 3
             Layout.fillWidth: true
-            height: 20
             Layout.fillHeight: false
+            Text {
+                text: "Push every"
+            }
             TextInput {
-
-                id: pushBatchInput
+                id: pushBatchEveryInput
                 font.pointSize: 12
                 Layout.fillWidth: true
                 validator: RegularExpressionValidator {
                     regularExpression: /\d+/
                 }
-                text: window.pushBatch
-//                onEditingFinished: {
-//                    if (pushBatchInput.text == "") {
-//                        console.log("bad input");
-////                        statusText.text = "Please fill in the distance"
-//                        pushBatchInput.forceActiveFocus()
-//                    }
-//                }
+                text: window.pushBatchEvery
             }
             Button {
-                id: savePushBatchInput
+                id: savePushBatchEveryInput
                 text: "Save"
                 onClicked: {
-                    window.pushBatch = parseInt(pushBatchInput.text);
+                    var i = parseInt(pushBatchEveryInput.text);
+                    if (pushBatchEveryInput.text === "" || i < 1) {
+                        pushBatchEveryInput.text = 1;
+                    }
+                    window.pushBatchEvery = i;
+                }
+            }
+        }
+        GridLayout {
+            columns: 3
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Text {
+                text: "Push batch size"
+            }
+            TextInput {
+                id: pushBatchSizeInput
+                font.pointSize: 12
+                Layout.fillWidth: true
+                validator: RegularExpressionValidator {
+                    regularExpression: /\d+/
+                }
+                text: window.pushBatchSize
+            }
+            Button {
+                id: savePushBatchSizeInput
+                text: "Save"
+                onClicked: {
+                    var i = parseInt(pushBatchSizeInput.text);
+                    if (pushBatchSizeInput.text === "" || i < 1) {
+                        pushBatchSizeInput.text = 1;
+                    }
+                    window.pushBatchSize = i;
                 }
             }
         }

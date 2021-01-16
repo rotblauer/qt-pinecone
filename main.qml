@@ -1,4 +1,4 @@
-import QtQuick 2.10
+import QtQuick 2.14
 
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
@@ -23,12 +23,15 @@ ApplicationWindow {
 
     Material.theme: Material.Dark
     Material.accent: Material.Purple
+z
+    property int pushBatch: 100
 
     Settings {
         property alias x: window.x
         property alias y: window.y
         property alias width: window.width
         property alias height: window.height
+        property alias pushBatch: window.pushBatch
     }
 
     function withPrec(value, prec) {
@@ -83,15 +86,15 @@ ApplicationWindow {
             "name": "Dinagat Islands"
           }
         }
-        	props["UUID"] = trackPointCurrent.Uuid
-        	props["Name"] = trackPointCurrent.Name
-        	props["Time"] = trackPointCurrent.Time
-        	props["UnixTime"] = trackPointCurrent.Time.Unix()
-        	props["Version"] = trackPointCurrent.Version
-        	props["Speed"] = trackPointCurrent.Speed
-        	props["Elevation"] = trackPointCurrent.Elevation
-        	props["Heading"] = trackPointCurrent.Heading
-        	props["Accuracy"] = trackPointCurrent.Accuracy
+            props["UUID"] = trackPointCurrent.Uuid
+            props["Name"] = trackPointCurrent.Name
+            props["Time"] = trackPointCurrent.Time
+            props["UnixTime"] = trackPointCurrent.Time.Unix()
+            props["Version"] = trackPointCurrent.Version
+            props["Speed"] = trackPointCurrent.Speed
+            props["Elevation"] = trackPointCurrent.Elevation
+            props["Heading"] = trackPointCurrent.Heading
+            props["Accuracy"] = trackPointCurrent.Accuracy
 
         */
         var f = {
@@ -302,6 +305,28 @@ ApplicationWindow {
         anchors.bottomMargin: 0
         anchors.leftMargin: 0
         anchors.topMargin: 0
+
+        GridLayout {
+
+            columns: 1
+            Layout.fillWidth: true
+            height: 20
+            TextInput {
+
+                id: pushBatchInput
+                validator: RegularExpressionValidator {
+                    regularExpression: /\d+/
+                }
+                onEditingFinished: {
+                    if (distInput.text == "") {
+                        console.log("bad input");
+//                        statusText.text = "Please fill in the distance"
+                        distInput.forceActiveFocus()
+                    }
+                }
+            }
+        }
+
         GridLayout {
             Layout.fillWidth: true
             columns: 5

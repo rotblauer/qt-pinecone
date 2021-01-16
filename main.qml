@@ -29,65 +29,6 @@ ApplicationWindow {
         property alias height: window.height
     }
 
-    function api_post(callback, end_point, send_data, params) {
-        var xhr = new XMLHttpRequest()
-        params = params || {}
-
-        var parameters = ""
-        for (var p in params) {
-            parameters += "&" + p + "=" + params[p]
-        }
-        var request = end_point + "?" + parameters
-        console.log(request)
-        send_data = JSON.stringify(send_data)
-        console.log(send_data)
-
-        xhr.onreadystatechange = function () {
-            processRequest(xhr, callback)
-        }
-
-        xhr.open('POST', request, true)
-        xhr.setRequestHeader("Content-Type", "application/json")
-        xhr.setRequestHeader("Accept", "application/json")
-        xhr.send(send_data)
-    }
-
-    function api_get(callback, end_point, params) {
-        var xhr = new XMLHttpRequest()
-        params = params || {}
-
-        var parameters = ""
-        for (var p in params) {
-            parameters += "&" + p + "=" + params[p]
-        }
-        var request = end_point + "?" + parameters
-        console.log(request)
-
-        xhr.onreadystatechange = function () {
-            processRequest(xhr, callback)
-        }
-
-        xhr.open('GET', request, true)
-        xhr.setRequestHeader("Content-Type", "application/json")
-        xhr.setRequestHeader("Accept", "application/json")
-        xhr.send('')
-    }
-
-    function processRequest(xhr, callback, e) {
-        if (xhr.readyState === 4) {
-            console.log(xhr.status);
-            var response;
-            try {
-                response = JSON.parse(xhr.responseText);
-            } catch (ee) {
-                response = xhr.responseText;
-            }
-            callback(xhr.status, response);
-        } else if (e) {
-            console.log("request error:", e);
-        }
-    }
-
     function getDBRowsCount() {
         var count = DBJS.dbCount();
         return count;
@@ -103,15 +44,15 @@ ApplicationWindow {
         var precVel = 100; // Math.pow(10, 2); // velocities
 
         var positionObject = {
-                              timestamp: position.timestamp + "",
-                              longitude: withPrec(position.coordinate.longitude, precLL),
-                              latitude: withPrec(position.coordinate.latitude, precLL),
-                              altitude: withPrec(position.coordinate.altitude, precVel) || 0,
-                              direction: withPrec(position.direction, precVel) || -1,
-                              horizontal_accuracy: withPrec(position.horizontal_accuracy, precVel) || -1,
-                              vertical_accuracy: withPrec(position.vertical_accuracy, precVel) || -1,
-                              speed: withPrec(position.speed, precVel) || -1,
-                              vertical_speed: withPrec(position.vertical_speed, precVel) || -1
+            timestamp: position.timestamp + "",
+            longitude: withPrec(position.coordinate.longitude, precLL),
+            latitude: withPrec(position.coordinate.latitude, precLL),
+            altitude: withPrec(position.coordinate.altitude, precVel) || 0,
+            direction: withPrec(position.direction, precVel) || -1,
+            horizontal_accuracy: withPrec(position.horizontal_accuracy, precVel) || -1,
+            vertical_accuracy: withPrec(position.vertical_accuracy, precVel) || -1,
+            speed: withPrec(position.speed, precVel) || -1,
+            vertical_speed: withPrec(position.vertical_speed, precVel) || -1
         };
 
         var rowid = parseInt(DBJS.dbInsert(positionObject), 10);
@@ -127,12 +68,16 @@ ApplicationWindow {
             listView.currentIndex = 0;
             listView.forceLayout()
 
-            var count = getDBRowsCount();
-            console.log("db contains", count, "");
-            entriesCount.text = "Q: " + count;
+            updatePointsQueuedDisplay();
         }
         return rowid;
     }
+
+    function updatePointsQueuedDisplay() {
+        var count = getDBRowsCount();
+        entriesCount.text = "Q: " + count;
+    }
+
     function logPosition(position) {
         console.log("position.timestamp", position.timestamp)
         console.log("position.coordinate.longitude", position.coordinate.longitude)
@@ -159,7 +104,7 @@ ApplicationWindow {
     PositionSource {
         id: positionSource
         updateInterval: 1000
-        active: true
+//        active: true
         // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
             console.log("-> positionSource.nmeaSource", positionSource.nmeaSource)
@@ -205,14 +150,14 @@ ApplicationWindow {
         return "source error"
     }
     function startPositioning() {
-        if (positionSource.supportedPositioningMethods
-                === PositionSource.NoPositioningMethods ||
-            positionSource.supportedPositioningMethods
-                            === PositionSource.NonSatellitePositioningMethods) {
+        positionMethodText.text = printableMethod(positionSource.supportedPositioningMethods);
+
+        if (positionSource.supportedPositioningMethods === PositionSource.NoPositioningMethods ||
+            positionSource.supportedPositioningMethods === PositionSource.NonSatellitePositioningMethods) {
+
             console.log("No real positioning methods, using NMEA file")
             positionSource.nmeaSource = "SpecialDelivery2.nmea"
-            positionMethodText.text = "(nmea filesource): " + printableMethod(
-                        positionSource.supportedPositioningMethods)
+            positionMethodText.text = printableMethod(positionSource.supportedPositioningMethods) + " [" + positionSource.nmeaSource + "]"
         }
 
         if (!positionSource.active) {

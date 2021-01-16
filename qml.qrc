@@ -5,5 +5,6 @@
         <file>MyModel.qml</file>
         <file>Database.js</file>
         <file>SpecialDelivery2.nmea</file>
+        <file>API.js</file>
     </qresource>
 </RCC>

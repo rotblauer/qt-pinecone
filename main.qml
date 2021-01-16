@@ -103,7 +103,7 @@ ApplicationWindow {
             "properties": {
                 "UUID": SECRETS.appCatOwnerName,
                 "Name": SECRETS.appUUID,
-                "Version": "FIXME",
+                "Version": SECRETS.appVersion,
                 "Time": point.timestamp, // this should already by in ISO8601
                 "UnixTime": point.unix_timestamp,
                 "Speed": point.speed,
@@ -117,6 +117,8 @@ ApplicationWindow {
         }
         return f;
     }
+
+    property int pushedN;
 
     // pushBatching is a recursive (on success) function which attempts to push
     // all entries stored in the database in batches of batchSize.
@@ -149,9 +151,11 @@ ApplicationWindow {
                 } catch (e) {
                     responseText = resp;
                 }
-                setStatusDisplay(pushStatusText, "error", "Pus status: " +  status + " " + responseText);
+                setStatusDisplay(pushStatusText, "error", "Push status: " +  status + " " + responseText);
                 return;
             }
+
+            pushedN += entries.length;
 
             setStatusDisplay(pushStatusText, "info", "Push status: " + status);
 
@@ -300,16 +304,10 @@ ApplicationWindow {
         anchors.topMargin: 0
         GridLayout {
             Layout.fillWidth: true
-            columns: 4
+            columns: 5
             Text {
                 id: positionMethodText
                 text: "<POSITIONING METHOD>"
-                color: Material.color(Material.Teal)
-                Layout.fillWidth: true
-            }
-            Text {
-                id: entriesCount
-                text: "<NUM ENTRIES>"
                 color: Material.color(Material.Teal)
                 Layout.fillWidth: true
             }
@@ -319,6 +317,18 @@ ApplicationWindow {
                 color: Material.color(Material.Grey)
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
+            }
+            Text {
+                id: entriesCount
+                text: "<NUM ENTRIES>"
+                color: Material.color(Material.Teal)
+                Layout.fillWidth: true
+            }
+            Text {
+                id: pushedCount
+                text: pushedN
+                color: Material.color(Material.Teal)
+                Layout.fillWidth: true
             }
             Text {
                 id: pushStatusText

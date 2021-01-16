@@ -11,9 +11,7 @@ function api_post(end_point, send_data, params, headers, callback) {
         parameters = "?" + parameters;
     }
     var requestURL = end_point + parameters;
-    console.log(requestURL)
     send_data = JSON.stringify(send_data)
-    console.log(send_data)
 
     xhr.onreadystatechange = function () {
         processRequest(xhr, callback)
@@ -51,7 +49,6 @@ function api_get(end_point, params, callback) {
 
 function processRequest(xhr, callback, e) {
     if (xhr.readyState === 4) {
-        console.log(xhr.status);
         var response;
         try {
             response = JSON.parse(xhr.responseText);

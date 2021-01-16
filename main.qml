@@ -23,7 +23,7 @@ ApplicationWindow {
 
     Material.theme: Material.Dark
     Material.accent: Material.Purple
-z
+
     property int pushBatch: 100
 
     Settings {

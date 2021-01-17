@@ -7,5 +7,6 @@
         <file>SpecialDelivery2.nmea</file>
         <file>API.js</file>
         <file>secrets.js</file>
+        <file>Positioning.qml</file>
     </qresource>
 </RCC>

@@ -18,8 +18,8 @@ import Qt.labs.settings 1.0
 ApplicationWindow {
     id: window
     visible: true
-    width: 400 // Screen.width
-    height: 800 // Screen.height
+    width: 720 // Screen.width
+    height: 1440 // Screen.height
 
     Material.theme: Material.Dark
     Material.accent: Material.Purple
@@ -30,8 +30,8 @@ ApplicationWindow {
     Settings {
         property alias x: window.x
         property alias y: window.y
-        property alias width: window.width
-        property alias height: window.height
+        property alias width:  window.width
+        property alias height:  window.height
         property alias pushBatchSize: window.pushBatchSize
         property alias pushBatchEvery: window.pushBatchEvery
     }
@@ -64,8 +64,8 @@ ApplicationWindow {
 
             // Manually insert a COPY of the record into the listview model.
             listView.model.insert(0, positionObject);
-            if (listView.model.count > 30) {
-                listView.model.remove(30, listView.model.count - 30);
+            if (listView.model.count > 20) {
+                listView.model.remove(20, listView.model.count - 20);
             }
 
             listView.currentIndex = 0;
@@ -214,7 +214,7 @@ ApplicationWindow {
     PositionSource {
         id: positionSource
         updateInterval: 1000
-//        active: true
+        //        active: true
         // nmeaSource: "SpecialDelivery2.nmea"
         onPositionChanged: {
             var stat = "info";
@@ -222,6 +222,10 @@ ApplicationWindow {
 
 
             if (positionSource.position && positionSource.position.coordinate.isValid) {
+
+                dashKMH.text = Math.round(position.speed * 3.6)
+                dashCoG.text = Math.round(position.direction)
+                dashHacc.text = Math.round(position.horizontalAccuracy)
 
                 // Save valid updated position.
                 var savedRowId = saveValidPosition(positionSource.position);
@@ -269,7 +273,7 @@ ApplicationWindow {
         positionMethodText.text = printableMethod(positionSource.supportedPositioningMethods);
 
         if (positionSource.supportedPositioningMethods === PositionSource.NoPositioningMethods ||
-            positionSource.supportedPositioningMethods === PositionSource.NonSatellitePositioningMethods) {
+                positionSource.supportedPositioningMethods === PositionSource.NonSatellitePositioningMethods) {
 
             console.log("No real positioning methods, using NMEA file")
             positionSource.nmeaSource = "SpecialDelivery2.nmea"
@@ -401,6 +405,87 @@ ApplicationWindow {
             }
         }
 
+        Rectangle {
+            id: rectangleDash
+            width: 200
+            height: 150
+            anchors.right: parent.right;
+            anchors.left: parent.left;
+//            color: "#015c40"
+            color: parent.color
+            Rectangle {
+                id: rectangle1
+                width: parent.width / 3;
+                height: parent.height;
+                color: Material.color(Material.Teal)
+                Text {
+                    id: dashKMHLabel
+                    color: "#a1eed1"
+                    text: "Km/H"
+                    x: rectangle1.x + 10
+                    y: rectangle1.y + 10
+                }
+                Text {
+                    id: dashKMH
+                    color: "#00ea95"
+                    font.pointSize: 54
+                    text: "N"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    minimumPointSize: 20
+                    minimumPixelSize: 20
+                }
+            }
+            Rectangle {
+                id: rectangle2
+                x: parent.width / 3;
+                width: parent.width / 3;
+                height: parent.height;
+                color: Material.color(Material.Teal)
+                Text {
+                    id: dashHeadingLabel
+                    color: "#a1eed1"
+                    text: "Heading deg"
+                    x: 10
+                    y: rectangle2.y + 10
+                }
+                Text {
+                    id: dashCoG
+                    color: "#00ea95"
+                    font.pointSize: 54
+                    text: "N"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    minimumPointSize: 20
+                    minimumPixelSize: 20
+                }
+            }
+            Rectangle {
+                id: rectangle3
+                x: parent.width / 3 * 2;
+                width: parent.width / 3;
+                height: parent.height;
+                color: Material.color(Material.Teal)
+                Text {
+                    id: dashAccuracyLabel
+                    color: "#a1eed1"
+                    text: "Accuracy meters"
+                    x: 10
+                    y: rectangle3.y + 10
+                }
+                Text {
+                    id: dashHacc
+                    color: "#00ea95"
+                    font.pointSize: 54
+                    text: "M"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    minimumPointSize: 20
+                    minimumPixelSize: 20
+                }
+            }
+        }
+
         GridLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
@@ -460,6 +545,7 @@ ApplicationWindow {
             Layout.preferredHeight: 460
             Layout.fillHeight: true
             Layout.fillWidth: true
+            anchors.bottom: parent.bottom;
 
             ListView {
                 id: listView
@@ -475,9 +561,11 @@ ApplicationWindow {
                 highlightFollowsCurrentItem: true
                 focus: true
 
-//                header: Component {}
+                //                header: Component {}
             }
         }
+
+
     }
 
     Component {
@@ -492,6 +580,8 @@ ApplicationWindow {
     Component.onCompleted: {
         DBJS.dbInit();
         startPositioning();
+        window.height = 1440;
+        window.width = 720;
     }
 }
 

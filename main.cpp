@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 //    view.setMinimumSize(QSize(800, 1500));
 //    view.setMinimumSize(QSize(200, 500));
 
-
 //    view.show();
 
     QQmlApplicationEngine engine(QStringLiteral("qrc:///main.qml"));
